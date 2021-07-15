@@ -75,24 +75,25 @@ Argument | Description
 **delete** | if set to true, the related model will be deleted if the primary model is deleted or relationship is destroyed, default: false.
 **detach** | used by the `belongsToMany` relationships only, if set to false, the related model will be not be detached if the primary model is deleted or relationship is destroyed, default: true.
 **count** | if set to true, the result contains a `count` column only, used for counting relations, default: false.
+**relationClass** | specify a custom class name for the related object.
 
-Example filter using **order** and **conditions**:
+Example filter using **order** and **conditions** parameters.
 
     public $belongsToMany = [
         'categories' => [
-            'Acme\Blog\Models\Category',
+            \Acme\Blog\Models\Category::class,
             'order'      => 'name desc',
             'conditions' => 'is_active = 1'
         ]
     ];
 
-Example filter using **scope**:
+Example filter using the **scope** parameter.
 
     class Post extends Model
     {
         public $belongsToMany = [
             'categories' => [
-                'Acme\Blog\Models\Category',
+                \Acme\Blog\Models\Category::class,
                 'scope' => 'isActive'
             ]
         ];
@@ -106,12 +107,37 @@ Example filter using **scope**:
         }
     }
 
-Example filter using **count**:
+The **scope** parameter can also refer to a static method.
 
     public $belongsToMany = [
-        'users' => ['Backend\Models\User'],
-        'users_count' => ['Backend\Models\User', 'count' => true]
+        'categories' => [
+            \Acme\Blog\Models\Category::class,
+            'scope' => [self::class, 'myFilterMethod']
+        ]
     ];
+
+    public static myFilterMethod($query, $related, $parent)
+    {
+        // ...
+    }
+
+Example filter using the **count** parameter.
+
+    public $belongsToMany = [
+        'users' => \Backend\Models\User::class,
+        'users_count' => [\Backend\Models\User::class, 'count' => true]
+    ];
+
+Example implementation using the **relationClass** parameter.
+
+    public $belongsToMany = [
+        'users' => [
+            \Backend\Models\User::class,
+            'relationClass' => \Backend\Classes\MyBelongsToMany::class
+        ]
+    ];
+
+> **Note**: The `relationClass` should inherit the class of the specified type. For example, when using `belongsTo` the class must inherit `October\Rain\Database\Relations\BelongsTo`.
 
 <a name="relationship-types"></a>
 ## Relationship Types
