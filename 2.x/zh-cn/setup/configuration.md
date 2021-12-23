@@ -1,4 +1,4 @@
-# Configuration
+# 配置
 
 All of the configuration files for October CMS are stored in the **config** directory. Each option is documented, so feel free to look through the files and get familiar with the options available to you.
 
