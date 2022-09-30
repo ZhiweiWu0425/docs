@@ -153,7 +153,7 @@ class Post extends Model
 
 ## Retrieving Models
 
-When requesting data from the database the model will retrieve values primarily using the `get` or `first` methods, depending on whether you wish to [retrieve multiple models](#oc-retrieving-multiple-models) or [retrieve a single model](#oc-retrieving-a-single-model) respectively. Queries that derive from a Model return an instance of [October\Rain\Database\Builder](../api/october/rain/database/builder).
+When requesting data from the database the model will retrieve values primarily using the `get` or `first` methods, depending on whether you wish to [retrieve multiple models](#oc-retrieving-multiple-models) or [retrieve a single model](#oc-retrieving-a-single-model) respectively. Queries that derive from a Model return an instance of [October\Rain\Database\Builder](https://octobercms.com/docs/api/october/rain/database/builder).
 
 <a id="oc-retrieving-multiple-models"></a>
 ### Retrieving Multiple Models
@@ -315,7 +315,7 @@ Once we have made the attributes mass assignable, we can use the `create` method
 $flight = Flight::create(['name' => 'Flight 10']);
 ```
 
-While `$fillable` serves as a "white list" of attributes that should be mass assignable, you may also choose to use `$guarded`. The `$guarded` property should contain an array of attributes that you do not want to be mass assignable. All other attributes not in the array will be mass assignable. So, `$guarded` functions like a "black list". Of course, you should use either `$fillable` or `$guarded` - not both:
+While `$fillable` serves as an "allow list" of attributes that should be mass assignable, you may also choose to use `$guarded`. The `$guarded` property should contain an array of attributes that you do not want to be mass assignable. All other attributes not in the array will be mass assignable. So, `$guarded` functions like a "block list". Of course, you should use either `$fillable` or `$guarded` - not both:
 
 ```php
 class Flight extends Model
@@ -478,7 +478,7 @@ public function beforeCreate()
 }
 ```
 
-> **Note**: Relationships created with [deferred-binding](relations#oc-deferred-binding) (i.e: file attachments) will not be available in the `afterSave` model event if they have not been committed yet. To access uncommitted bindings, use the `withDeferred($sessionKey)` method on the relation. Example: `$this->images()->withDeferred(post('_session_key'))->get();`
+> **Note**: Relationships created with [deferred-binding](relations.md#oc-deferred-binding) (i.e: file attachments) will not be available in the `afterSave` model event if they have not been committed yet. To access uncommitted bindings, use the `withDeferred($sessionKey)` method on the relation. Example: `$this->images()->withDeferred(post('_session_key'))->get();`
 
 ### Basic Usage
 

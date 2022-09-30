@@ -50,11 +50,11 @@ Plugins and themes alike can require a specific version of October CMS and also 
 
 #### Requiring a Version of October CMS
 
-Simply require the `october/system` package to the desired [target version pattern](https://getcomposer.org/doc/articles/versions.md). The following will require that the platform installation uses version 2.1 of October CMS.
+Simply require the `october/system` package to the desired [target version pattern](https://getcomposer.org/doc/articles/versions.md). The following will require that the platform installation uses version 2.1 of October CMS or above.
 
 ```json
 "require": {
-    "october/system": "^2.1"
+    "october/system": ">=2.1"
 }
 ```
 
@@ -184,7 +184,7 @@ This will set all the package config values to be that of your plugin config val
 Config::get('purifier.encoding') === Config::get('acme.blog::purifier.encoding');
 ```
 
-Now you are free to provide the packages configuration values the same way you would with regular plugin configuration values and the [standard configuration approach](settings.md#oc-file-based-configuration).
+Now you are free to provide the packages configuration values the same way you would with regular plugin configuration values and the [standard configuration approach](../plugin/settings.md#oc-file-based-configuration).
 
 ### Aliases & Service Providers
 
