@@ -41,9 +41,8 @@ October CMS supports various drivers, including `single`, `daily`, `syslog` and 
 'default' => env('LOG_CHANNEL', 'daily'),
 ```
 
-
 #### See Also
 
 ::: also
-* [Laravel Logging Documentation](https://laravel.com/docs/9.x/logging)
+* [Laravel Logging Documentation](https://laravel.com/docs/10.x/logging)
 :::

@@ -1,3 +1,6 @@
+---
+subtitle: Form Field
+---
 # Number
 
 The `number` field renders a single line text box that takes numbers only.
@@ -8,10 +11,13 @@ your_age:
     type: number
 ```
 
-The following properties are supported.
+The following [field properties](../form-fields.md) are supported and commonly used.
 
 Property | Description
 ------------- | -------------
+**label** | a name when displaying the form field to the user.
+**default** | specifies a default string value, optional.
+**comment** | places a descriptive comment below the field.
 **min** | the client-side minimum value, default `null`.
 **max** | the client-side maximum value, default `null`.
 **step** | the client-side step increment, default `any`.
@@ -43,15 +49,14 @@ If you would like to validate this field server-side on save to ensure that it i
 your_age:
     label: Your Age
     type: number
-    validation:
-        - numeric
+    validation: numeric
 ```
 
 When working with models, use the `$rules` property on your model, like so.
 
 ```php
 public $rules = [
-    'your_age' => 'numeric',
+    'your_age' => ['numeric'],
 ];
 ```
 

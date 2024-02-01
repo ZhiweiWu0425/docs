@@ -1,3 +1,6 @@
+---
+subtitle: Form Widget
+---
 # Data Table
 
 `datatable` - renders an editable table of records, formatted as a grid. Cell content can be editable directly in the grid, allowing for the management of several rows and columns of information.
@@ -16,12 +19,13 @@ data:
 In order to use this with a model, the field should be defined in the [jsonable property](../../extend/system/models.md) or anything that can handle storing as an array.
 :::
 
-#### Table configuration
+The following [field properties](../form-fields.md) are supported and commonly used.
 
-The following lists the configuration values of the data table widget itself.
-
-Option | Description
+Property | Description
 ------ | -----------
+**label** | a name when displaying the form field to the user.
+**default** | specifies a default string value, optional.
+**comment** | places a descriptive comment below the field.
 **adding** | allow records to be added to the data table. Default: `true`.
 **btnAddRowLabel** | defines a custom label for the "Add Row Above" button.
 **btnAddRowBelowLabel** | defines a custom label for the "Add Row Below" button.
@@ -37,7 +41,7 @@ Option | Description
 **searching** | allow records to be searched via a search box. Default: `false`.
 **toolbar** | an array representing the toolbar configuration of the data table.
 
-#### Column configuration
+#### Column Configuration
 
 The data table widget allows for the specification of columns as an array via the `columns` configuration variable. Each column should use the field name as a key, and the following configuration variables to set up the field.
 
@@ -65,7 +69,7 @@ Option | Description
 **validation** | an array specifying the validation for the content of the column's cells. See the *Column validation* section below.
 **width** | defines the width of the column, in pixels.
 
-#### Column validation
+#### Column Validation
 
 Column cells can be validated against the below types of validation. Validation should be specified as an array, with the type of validation used as a key, and an optional message specified as the `message` attrbute for that validation.
 

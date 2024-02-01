@@ -44,10 +44,7 @@ class Invoice extends Model
 An `Invoice` model with a relationship called `items` should define the first level field using the same relationship name.
 
 ```yaml
-# ===================================
-#  Relation Behavior Config
-# ===================================
-
+# config_relation.yaml
 items:
     label: Invoice Line Item
     view:
@@ -67,19 +64,20 @@ Property | Description
 **manage** | configuration specific to the management popup, see below.
 **pivot** | a reference to form field definition file, used for relations with pivot table data.
 **emptyMessage** | a message to display when the relationship is empty, optional.
-**readOnly** | disables the ability to add, update, delete or create relations. default: `false`
+**readOnly** | disables the ability to add, update, delete or create relations. Default: `false`
 **deferredBinding** | [defers all binding actions using a session key](../database/relations.md) when it is available. default: `false`
+**popupSize** | change the size of the management popups used, either: `giant`, `huge`, `large`, `small`, `tiny` or `adaptive`. Default: `huge`
 
 These configuration values can be specified for the **view** or **manage** properties, where applicable to the render type of list, form or both.
 
 Property | Type | Description
 ------------- | ------------- | -------------
-**form** | Form | a reference to form field definition file, see [backend form fields](../../element/definitions.md).
-**list** | List | a reference to list column definition file, see [backend list columns](../../element/definitions.md).
+**form** | Form | a reference to form field definition file, see [backend form fields](../../element/form-fields.md).
+**list** | List | a reference to list column definition file, see [backend list columns](../../element/list-columns.md).
 **showFlash** | Both | enables the display of flash messages after a successful action. Default: `true`
 **showSearch** | List | display an input for searching the records. Default: `false`
 **showSorting** | List | displays the sorting link on each column. Default: `true`
-**defaultSort** | List | sets a default sorting column and direction when user preference is not defined. Supports a string or an array with keys `column` and `direction`.
+**defaultSort** | List | sets a default sorting column and direction when user preference is not defined. Supports a string or an array with keys `column` and `direction`. The direction can be `asc` for ascending (default) or `desc` for descending order.
 **recordsPerPage** | List | maximum rows to display for each page.
 **noRecordsMessage** | List | a message to display when no records are found, can refer to a [localization string](../system/localization.md).
 **conditions** | List | specifies a raw where query statement to apply to the list model query.
@@ -87,6 +85,7 @@ Property | Type | Description
 **searchMode** | List | defines the search strategy to either contain all words, any word or exact phrase. Supported options: `all`, `any`, `exact`. Default: `all`.
 **searchScope** | List | specifies a [model query scope](../database/model.md) method defined in the related form model to apply to the search query, the first argument will contain the search term.
 **filter** | List | a reference to a filter scopes definition file, see [backend list filters](../lists/filters.md).
+**customPageName** | List | specify a custom variable name to use in the page URL for paginated records. Set to `false` to disable storing the page number in the URL.
 
 These configuration values can be specified only for the **view** property.
 
@@ -135,8 +134,11 @@ Message | Default Message
 **buttonAdd** | Add :name
 **buttonLink** | Link :name
 **buttonDelete** | Delete
+**buttonDeleteMany** | Delete Selected
 **buttonRemove** | Remove
+**buttonRemoveMany** | Remove Selected
 **buttonUnlink** | Unlink
+**buttonUnlinkMany** | Unlink Selected
 **confirmDelete** | Are you sure?
 **confirmUnlink** | Are you sure?
 **titlePreviewForm** | Preview :name
@@ -170,10 +172,7 @@ How the relation manager is displayed depends on the relationship definition in 
 For example, if a **Blog Post** has many **Comments**, the target model is set as the blog post and a list of comments is displayed, using columns from the `list` definition. Clicking on a comment opens a popup form with the fields defined in `form` to update the comment. Comments can be created in the same way. Below is an example of the relation behavior configuration file.
 
 ```yaml
-# ===================================
-#  Relation Behavior Config
-# ===================================
-
+# config_relation.yaml
 comments:
     label: Comment
     manage:
@@ -195,10 +194,7 @@ comments:
 For example, if a **User** belongs to many **Roles**, the target model is set as the user and a list of roles is displayed, using columns from the `list` definition. Existing roles can be added and removed from the user. Below is an example of the relation behavior configuration file.
 
 ```yaml
-# ===================================
-#  Relation Behavior Config
-# ===================================
-
+# config_relation.yaml
 roles:
     label: Role
     view:
@@ -219,10 +215,7 @@ roles:
 Continuing the example in **Belongs To Many** relations, if a role also carried an expiry date, clicking on a role will open a popup form with the fields defined in `pivot` to update the expiry date. Below is an example of the relation behavior configuration file.
 
 ```yaml
-# ===================================
-#  Relation Behavior Config
-# ===================================
-
+# config_relation.yaml
 roles:
     label: Role
     view:
@@ -236,10 +229,7 @@ roles:
 Pivot data is available when defining form fields and list columns via the `pivot` relation, see the example below.
 
 ```yaml
-# ===================================
-#  Relation Behavior Config
-# ===================================
-
+# config_relation.yaml
 teams:
     label: Team
     view:
@@ -273,10 +263,7 @@ teams:
 For example, if a **Phone** belongs to a **Person** the relation manager will display a form with the fields defined in `form`. Clicking the Link button will display a list of People to associate with the Phone. Clicking the Unlink button will dissociate the Phone with the Person.
 
 ```yaml
-# ===================================
-#  Relation Behavior Config
-# ===================================
-
+# config_relation.yaml
 person:
     label: Person
     view:
@@ -299,10 +286,7 @@ person:
 For example, if a **Person** has one **Phone** the relation manager will display form with the fields defined in `form` for the Phone. When clicking the Update button, a popup is displayed with the fields now editable. If the Person already has a Phone the fields are update, otherwise a new Phone is created for them.
 
 ```yaml
-# ===================================
-#  Relation Behavior Config
-# ===================================
-
+# config_relation.yaml
 phone:
     label: Phone
     view:

@@ -27,10 +27,7 @@ class Products extends Controller
 The configuration file referred in the `$importExportConfig` property is defined in YAML format. The file should be placed into the controller's [views directory](../system/views.md). Below is an example of a configuration file.
 
 ```yaml
-# ===================================
-#  Import/Export Behavior Config
-# ===================================
-
+# config_import_export.yaml
 import:
     title: Import subscribers
     modelClass: Acme\Campaign\Models\SubscriberImport
@@ -57,7 +54,7 @@ To support the Import page add the following configuration to the YAML file.
 
 ```yaml
 import:
-    title: Import subscribers
+    title: Import Subscribers
     modelClass: Acme\Campaign\Models\SubscriberImport
     list: $/acme/campaign/models/subscriberimport/columns.yaml
     redirect: acme/campaign/subscribers
@@ -79,7 +76,7 @@ To support the Export page add the following configuration to the YAML file.
 
 ```yaml
 export:
-    title: Export subscribers
+    title: Export Subscribers
     modelClass: Acme\Campaign\Models\SubscriberExport
     list: $/acme/campaign/models/subscriberexport/columns.yaml
     redirect: acme/campaign/subscribers
@@ -105,15 +102,17 @@ defaultFormatOptions:
     fileFormat: json
 ```
 
-The following configuration properties (all optional) are supported for the format options:
+The following configuration properties (all optional) are supported for the format options, including their applicable format type.
 
-Property | Description
-------------- | -------------
-**fileFormat** | File format as either `json` or `csv`, default: `csv`.
-**delimiter** | Delimiter character.
-**enclosure** | Enclosure character.
-**escape** | Escape character.
-**encoding** | File encoding (only used for the import).
+Property | Description | Format
+-------- | ----------- | ------
+**fileFormat** | File format as either `json`, `csv` or `csv_custom`, default: `json`. |
+**customJson** | Use a custom format for the `json` format type. | JSON
+**firstRowTitles** | First row contains headers, import only. | CSV
+**delimiter** | Delimiter character. | CSV (Custom)
+**enclosure** | Enclosure character. | CSV (Custom)
+**escape** | Escape character. | CSV (Custom)
+**encoding** | File encoding, import only. | CSV (Custom)
 
 ## Import and Export Views
 

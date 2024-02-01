@@ -1,3 +1,6 @@
+---
+subtitle: List Column
+---
 # Partial
 
 The `partial` column will render the column content using a partial or view file. The `path` value can refer to a partial view file otherwise the column name is used as the partial name. The default scope for the view path is the controller's view path.
@@ -13,7 +16,7 @@ The following properties are supported.
 
 Property | Description
 ------------- | -------------
-**path** | path to a [partial view file](../../extend/system/views.md) or [view template code](../../extend/services/response-view.md), defaults to the field name.
+**path** | path to a [partial view file](../../extend/system/views.md) or [view template code](../../extend/services/response-view.md), defaults to the column name.
 
 You may specify a fully qualified `path` to access partials outside the controller scope.
 

@@ -3,7 +3,7 @@ subtitle: Learn how links are routed using the AJAX framework.
 ---
 # Turbo Router
 
-A feature included with the [AJAX framework extra features](./extras.md) is an implementation of PJAX (push state and AJAX) called the turbo router. It gives the performance benefits of a single page application without the added complexity of a client-side framework. When you click a link, the page is automatically swapped client-side without the cost of a full page load.
+Turbo routing is an implementation of PJAX (push state and AJAX) that gives the performance benefits of a single page application without the added complexity of a client-side framework. When you click a link, the page is automatically swapped client-side without the cost of a full page load.
 
 ```twig
 {% framework turbo %}
@@ -63,6 +63,14 @@ You may re-enable when an ancestor has disabled:
 </div>
 ```
 
+## Disable Visit Scrolling
+
+Every visit scrolls to the top of the page like most links in a browser. However, in some cases preserving the scroll position is useful, such as situations where links act like filters. You may disable visit scrolling using the `data-turbo-no-scroll` attribute on the link element.
+
+```html
+<a href="/" data-turbo-no-scroll>Filter</a>
+```
+
 ## Persisting Page Elements
 
 In some cases you may want to include static elements on the page, these are elements that should not be refreshed when the page updates. Use the `data-turbo-permanent` attribute on the parent element. The element must also supply and `id` attribute so the original page can be matched with the new page, including event listeners.
@@ -83,6 +91,16 @@ For example, if you website lives in `/app` and you don't want the links to appl
 </head>
 ```
 
+## Native Error Pages
+
+When using PJAX and the server responds with an error code, such as 404 or 500 status, the complete html element is replaced, including scripts and stylesheets. This prevents accidentally replacing the body element with content not produced by the same application code.
+
+You may disable this behavior by including the `turbo-visit-control` meta tag in the head section of the page with the `error` value. This will tell the turbo router that the error page content is produced by the native application.
+
+```html
+<meta name="turbo-visit-control" content="error">
+```
+
 ## Page Caching
 
 With caching enabled, the turbo router speeds up a website's performance by displaying revisited pages without accessing the network, making the website feel faster. When clicking a link, the contents are shown from the browser's local storage while the page requests the background. The latest page shows when the network request is complete, meaning the page renders twice.
@@ -99,7 +117,7 @@ addEventListener('page:before-cache', function() {
 
 ### Detecting a Cached Page Load
 
-You can detect when the page contents are sourced from the cache with the `data-turbo-preview` attribute on the HTML element. Expressed in JavaScript as:
+You can detect when the page contents are sourced from the cache with the `data-turbo-preview` attribute on the HTML element. Expressed in JavaScript as the following.
 
 ```js
 if (document.documentElement.hasAttribute('data-turbo-preview')) {
@@ -107,7 +125,7 @@ if (document.documentElement.hasAttribute('data-turbo-preview')) {
 }
 ```
 
-Or using a StyleSheet:
+Or using a StyleSheet with the following.
 
 ```css
 html[data-turbo-preview] {
@@ -127,37 +145,74 @@ You can disable the page cache for individual pages by using the `turbo-cache-co
 
 ## Working with JavaScript
 
-When working with PJAX, the page contents may load dynamically, which differs from the usual browser behavior. To overcome this, use the `page:loaded` event handler is called every time the page loads.
+When working with PJAX, the page contents may load dynamically, which differs from the usual browser behavior. To overcome this, use the `render` event handler is called every time the page loads, including [AJAX updates](./update-partials.md).
 
 ```js
-addEventListener('page:loaded', function() {
+addEventListener('render', function() {
     // Page has rendered something new
 });
 ```
 
+The `oc.pageReady` function is used call code when the page and scripts are ready. The function returns a promise that is resolved after all the page scripts have loaded, or immediately if they are already loaded.
+
+```js
+oc.pageReady().then(() => {
+    // Page has finished loading scripts
+});
+```
+
+### Inline Script Elements
+
+The turbo router maintains the scripts within the `<head>` tag of the page by comparing the differences. If you use script tags in the `<body>` tag then the script will be executed every time the page renders, which may be undesirable.
+
+You may include `data-turbo-eval="false"` to only allow the script to be executed on the first page load. The script will not be called for any PJAX requests.
+
+```html
+<body>
+    <script data-turbo-eval="false" src="{{ ['@framework.bundle']|theme }}"></script>
+</body>
+```
+::: tip
+If you are placing scripts in the `<body>` tag for performance reasons, consider moving it to the `<head>` tag and using `<script defer>` instead.
+:::
+
+To execute inline JavaScript code only once, regardless of first page load or PJAX request, set a unique value to the `data-turbo-eval-once` attribute. The unique value (e.g `myAjaxPromise`) is used to determine if the script has been seen before.
+
+```html
+<script data-turbo-eval-once="myAjaxPromise">
+    // This script will run once only
+    addEventListener('ajax:promise', function(event) {
+        //
+    });
+</script>
+```
+
 ### Making Controls Idempotent
+
+::: aside
+October CMS provides a complimentary library that is used to make building [idempotent controls](./hot-controls.md) easy.
+:::
 
 When a page visit occurs and JavaScript components are initialized, it is important that these function are idempotent. In simple terms, an idempotent function is safe to apply multiple times without changing the result beyond its initial application.
 
-One technique for making a function idempotent is to keep track of whether you've already performed it by adding a value to the `dataset` property on each processed element.
+One technique for making a function idempotent is to keep track of whether you've already performed it by adding a value to the `dataset` property on each processed element. This is useful for external scripts.
 
 ```js
 addEventListener('page:loaded', function() {
     // Find my control
     var myControl = document.querySelector('.my-control');
 
-    // Halt because it has already been initialized
-    if (myControl.dataset.hasMyControl) {
-        return;
-    }
+    // Check if control has already been initialized
+    if (!myControl.dataset.hasMyControl) {
+        myControl.dataset.hasMyControl = true;
 
-    // Initialize since this is the first time
-    myControl.dataset.hasMyControl = true;
-    initializeMyControl(myControl);
+        // Initialize since this is the first time
+        initializeMyControl(myControl);
+    }
 });
 ```
 
-Another simpler approach is to allow the function to run multiple times and apply idempotence techniques internally. For example, check to see if a menu divider already exists first before creating a new one.
+As general advice, a simpler approach is to allow the function to run multiple times and apply idempotence techniques internally. For example, check to see if a menu divider already exists first before creating a new one.
 
 ### Disposing Controls
 
@@ -174,6 +229,10 @@ addEventListener('page:unload', function() {
     removeEventListener('keydown', myKeyDownFunction);
 }, { once: true });
 ```
+
+::: tip
+October CMS includes a complimentary library for [building disposable controls](./hot-controls.md).
+:::
 
 ### Pause Rendering
 
@@ -193,27 +252,13 @@ addEventListener('page:before-render', async (event) => {
 Keep in mind that the **page:before-render** event may fire twice, once from cache and once again after requesting the new page content.
 :::
 
-### Inline Script Elements
-
-The turbo router maintains the scripts within the `<head>` tag of the page by comparing the differences. If you use script tags in the `<body>` tag then the script will be executed every time the page renders, which may be undesirable.
-
-You may include `data-turbo-eval="false"` to prevent the script from executing again after rendering, however, it will still be called on the initial page load.
-
-```html
-<body>
-    <script data-turbo-eval="false" src="{{ ['@framework.bundle']|theme }}"></script>
-</body>
-```
-::: tip
-If you are placing scripts in the `<body>` tag for performance reasons, consider moving it to the `<head>` tag and using `<script defer>` instead.
-:::
-
 ## Global Events
 
-The AJAX framework triggers several events during the navigation lifecycle and page responses. The events are usually triggered on the `document` object with details available on the `event.detail` property.
+The AJAX framework triggers several events during the navigation life cycle and page responses. The events are usually triggered on the `document` object with details available on the `event.detail` property.
 
 Event | Description
 ------------- | -------------
+**render** | triggered when the page updates via PJAX or AJAX.
 **page:click** | triggered when a turbo-routed link is clicked.
 **page:before-visit** | triggered before visiting a location, except when navigating using browser history.
 **page:visit** | triggered after a clicked visit starts.
@@ -224,14 +269,15 @@ Event | Description
 **page:render** | triggered after the page is rendered. This is fired twice, once from cache and once again after requesting the new page content.
 **page:load** | triggered once after the initial page load and again every time a page is visited.
 **page:loaded** | identical to `page:load` except will wait for all newly added scripts to load.
+**page:updated** | similar to `DOMContentLoaded` except triggered only when a page is visited.
 **page:unload** | called when a previously loaded page should be disposed.
 
 ## Usage Examples
 
-The following JavaScript will run every time a page loads.
+The following JavaScript will run every time a page loads, including scripts.
 
 ```js
-addEventListener('page:load', function() {
+addEventListener('page:loaded', function() {
     // ...
 });
 ```
@@ -250,3 +296,9 @@ snippetOptions: {
    }
 }
 ```
+
+#### See Also
+
+::: also
+* [Observable Controls](./hot-controls.md)
+:::

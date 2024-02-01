@@ -1,5 +1,5 @@
 ---
-subtitle: Hold the content for each URL on your website.
+subtitle: Define a URL for each page on your website.
 ---
 # Pages
 
@@ -7,11 +7,14 @@ Every website serves up at least one page and in October CMS, a page is represen
 
 The Configuration and Twig template sections are required for pages, but the PHP section is optional. Below, you can see the simplest home page example.
 
-```twig
+::: cmstemplate
+```ini
 url = "/"
-==
+```
+```twig
 <h1>Hello, world!</h1>
 ```
+:::
 
 ## Page Configuration
 
@@ -46,15 +49,19 @@ url = "/blog/post/:post_id"
 
 This is how you can access the URL parameter from the page's PHP section (see the Dynamic Pages section for more details).
 
-```php
+::: cmstemplate
+```ini
 url = "/blog/post/:post_id"
-==
+```
+```php
 function onStart()
 {
     $postId = $this->param('post_id');
 }
-==
 ```
+```twig
+```
+:::
 
 Parameter names should be compatible with PHP variable names. To make a parameter optional, add a question mark after its name:
 
@@ -111,31 +118,38 @@ Inside the Twig section of a page template, you can use any [functions, filters,
 
 ### Page Execution Life Cycle
 
-There are special functions that can be defined in the PHP section of pages and layouts: `onInit`, `onStart`, and `onEnd`. The `onInit` function is executed when all components are initialized and before AJAX requests are handled. The `onStart` function is executed during the beginning of the page execution. The `onEnd` function is executed before the page is rendered and after the page [components](./components.md) are executed. In the `onStart` and `onEnd` functions, you can inject variables into the Twig environment. Use `array notation` to pass variables to the page:
+There are special functions that can be defined in the PHP section of pages and layouts: `onInit`, `onStart`, and `onEnd`. The `onInit` function is executed when all components are initialized and before AJAX requests are handled. The `onStart` function is executed during the beginning of the page execution. The `onEnd` function is executed before the page is rendered and after the page [components](./components.md) are executed. In the `onStart` and `onEnd` functions, you can inject variables into the Twig environment. Use the `$this` with array notation to pass variables to the page.
 
-```php
+::: cmstemplate
+```ini
 url = "/"
-==
+```
+```php
 function onStart()
 {
     $this['hello'] = "Hello world!";
 }
-==
+```
+```twig
 <h3>{{ hello }}</h3>
 ```
+:::
 
-The next example is more complicated. It shows how to load a blog post collection from the database, and display on the page (the Acme\Blog plugin is imaginary).
+The next example is more complicated. It shows how to load a blog post collection from the database, and display on the page (the `Acme\Blog` plugin is imaginary).
 
-```php
+::: cmstemplate
+```ini
 url = "/blog"
-==
+```
+```php
 use Acme\Blog\Classes\Post;
 
 function onStart()
 {
     $this['posts'] = Post::orderBy('created_at', 'desc')->get();
 }
-==
+```
+```twig
 <h2>Latest posts</h2>
 <ul>
     {% for post in posts %}
@@ -144,6 +158,7 @@ function onStart()
     {% endfor %}
 </ul>
 ```
+:::
 
 The default variables and Twig extensions provided by October CMS are described in the [Markup Guide](../../markup/templating.md). The sequence that the handlers are executed in is described by the [Dynamic Layouts section](./layouts.md).
 
@@ -171,11 +186,18 @@ public function onStart()
 
 You can handle standard forms with handler methods defined in the page or layout PHP section (handling the AJAX requests is explained in the [AJAX Framework](../ajax/introduction.md) article). Use the `form_open()` [Twig function](../../markup/function/form.md) to define a form that refers to an event handler.
 
-```twig
-{{ form_open({ request: 'onHandleForm' }) }}
-    Please enter a string: <input type="text" name="value"/>
-    <input type="submit" value="Submit me!"/>
-{{ form_close() }}
+```html
+<form data-request="onHandleForm">
+    <div>
+        <label>Please enter a string</label>
+        <input name="value"/>
+    </div>
+
+    <button data-attach-loading>
+        Submit
+    </button>
+</form>
+
 <p>Last submitted value: {{ lastValue }}</p>
 ```
 
@@ -196,8 +218,8 @@ If a handler with the same name is defined in the page layout, the page, and a [
 
 If you want to refer to a handler defined in a specific component, use the component's name or alias in the handler reference:
 
-```twig
-{{ form_open({ request: 'myComponent::onHandleForm' }) }}
+```html
+<form data-request="myComponent::onHandleForm">...</form>
 ```
 
 ## 404 Page
@@ -208,9 +230,13 @@ If the theme contains a page with the URL `/404`, it is displayed when the syste
 
 By default, any errors will be shown with a detailed error page containing the file contents, line number, and stack trace where the error occurred. You can display a custom error page by setting the configuration value `debug` to **false** in the `config/app.php` script, and creating a page with the URL `/error`.
 
-## Page Variables
+## Setting the Page Title
 
-The properties of a page can be accessed in the PHP code section or [Components](./components.md) by referencing `$this->page`.
+Setting the page title can be done inside PHP, using the Page Object, or inside Twig, using the [placeholder tag](../../markup/tag/placeholder.md).
+
+### Using Page Properties
+
+The properties of a page can be accessed in the PHP code section or [Components](./components.md) by referencing `$this->page`. The following sets the `meta_title` attribute to a new value.
 
 ```php
 function onEnd()
@@ -219,14 +245,38 @@ function onEnd()
 }
 ```
 
-They can also be accessed in the markup using the `this.page` variable. For example, to return the title of a page:
+The `{{ this.page }}` variable can be accessed in Twig using the `this.page` variable. For example, to return the `meta_title` attribute inside a layout.
 
 ```twig
-<p>The title of this page is: {{ this.page.meta_title }}</p>
+<title>{{ this.page.meta_title }}</title>
 ```
 
 ::: tip
 More information on `this.page` can be found in [the Markup guide](../../markup/property/this-page.md).
+:::
+
+### Using Placeholder Variables
+
+The `{% put %}` tag allows you to store a value inside a placeholder variable. The following sets the `pageTitle` variable.
+
+```twig
+{% put pageTitle = 'Yet another page title' %}
+```
+
+The `placeholder()` Twig function is used to access the variable inside the layout.
+
+```twig
+<title>{{ placeholder('pageTitle') }}</title>
+```
+
+A default value (second argument) can be supplied as a fallback.
+
+```twig
+<title>{{ placeholder('pageTitle', this.page.meta_title) }}</title>
+```
+
+::: tip
+More information on the placeholder tag can be found in [placeholder tag article](../../markup/tag/placeholder.md).
 :::
 
 ## Injecting Page Assets Programmatically
@@ -285,5 +335,5 @@ In order to output the injected assets on pages or [layouts](./layouts.md), use 
 ```
 
 ::: tip
-More information on `{% styles %}` and `{% scripts %}` tags can be found at [the Markup guide](../../markup/tag/styles.md).
+More information on `{% styles %}` and `{% scripts %}` tags can be found at [the Markup guide](../../markup/tag/placeholder.md).
 :::

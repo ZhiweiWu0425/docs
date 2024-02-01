@@ -83,10 +83,10 @@ App::error(function(InvalidUserException $exception) {
 });
 ```
 
-To listen for PHP fatal errors, you may use the `App::fatal` method:
+To listen for PHP fatal errors, you may use check for the Error exception type:
 
 ```php
-App::fatal(function($exception) {
+App::error(function(Error $exception) {
     //
 });
 ```
@@ -111,7 +111,7 @@ The `abort` method will immediately raise an exception which will be rendered by
 App::abort(403, 'Unauthorized action.');
 ```
 
-This method may be used at any time during the request's lifecycle. There is also an accompanying [Twig filter for aborting requests](../../markup/function/abort.md).
+This method may be used at any time during the request's life cycle. There is also an accompanying [Twig filter for aborting requests](../../markup/function/abort.md).
 
 ### Custom Error Page
 

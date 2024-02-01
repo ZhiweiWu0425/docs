@@ -1,5 +1,5 @@
 ---
-subtitle: Similar to partials but used for static content.
+subtitle: Dedicated files for storing and updating page content.
 ---
 # Content Blocks
 
@@ -11,11 +11,12 @@ Content blocks files reside in the **/content** subdirectory of a theme director
 
 Extension | Description
 ------------- | -------------
-**htm** | Used for HTML markup.
+**html** | Used for HTML markup (WYSIWYG editor).
+**htm** | Used for HTML markup (code editor).
 **txt** | Used for plain text.
 **md** | Used for Markdown syntax.
 
-The extension affects a content block's display mode in the back-end user interface, either with a WYSIWYG editor, plain text editor or markdown editor. It also determines rendering the blocks on the website; for example, Markdown blocks will convert to HTML before display.
+The extension affects a content block's display mode in the back-end user interface, either with a WYSIWYG editor, code editor or markdown editor. It also determines rendering the blocks on the website; for example, Markdown blocks will convert to HTML before display.
 
 ## Rendering Content Blocks
 
@@ -23,13 +24,16 @@ Use the `{% content 'file.htm' %}` tag to render a content block in a [page](./p
 
 This example shows a complete page rendering a content block.
 
-```twig
+::: cmstemplate
+```ini
 url = "/contacts"
-==
+```
+```twig
 <div class="contacts">
-    {% content 'contacts.htm' %}
+    {% content 'contacts.html' %}
 </div>
 ```
+:::
 
 Another example rendering some markdown with the `md` extension.
 
@@ -49,7 +53,7 @@ Passing the variable called `name` with a value **John** to the content block.
 
 Inside the content block, variables can be accessed using singular *curly brackets*.
 
-```
+```html
 <h1>This is a demo for {name}</h1>
 ```
 
@@ -67,7 +71,7 @@ View::share('site_name', 'October CMS');
 
 A common area to place this method is inside the register or boot method of a [plugin registration file](../../extend/system/plugins.md). Using the above example, the variable `{site_name}` will be available inside all content blocks.
 
-```
+```html
 <p>Welcome to {site_name}</p>
 ```
 

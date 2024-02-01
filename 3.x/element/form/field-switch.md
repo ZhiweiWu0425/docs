@@ -1,3 +1,6 @@
+---
+subtitle: Form Field
+---
 # Switch
 
 The `switch` field renders a switch box. Similar to a [checkbox field](./field-checkbox.md) except displayed as a toggle switch.
@@ -8,10 +11,11 @@ show_content:
     type: switch
 ```
 
-The following properties are supported.
+The following [field properties](../form-fields.md) are supported and commonly used.
 
 Property | Description
 ------------- | -------------
+**label** | a name when displaying the form field to the user.
 **default** | a default value to use for new records.
 **comment** | text to display below the checkbox.
 

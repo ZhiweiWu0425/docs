@@ -3,9 +3,11 @@ subtitle: Design your API and update the page dynamically.
 ---
 # Event Handlers
 
+AJAX event handlers are API endpoints for the AJAX framework to communicate with the server. They can respond with raw data, redirect the browser or dynamically update partials on the page.
+
 ## AJAX Handlers
 
-AJAX event handlers are PHP functions that can be defined in the page or layout PHP section or [inside components](../themes/components.md). Handler names should use the `onSomething` pattern, for example, `onName`. All handlers support the use of [updating partials](./update-partials.md) as part of the AJAX request.
+To create an AJAX handler, define it as a PHP function the page, partial or layout PHP section, or [inside CMS components](../themes/components.md). Handler names should use the `onSomething` pattern, for example, `onName`. All handlers support the use of [updating partials](./update-partials.md) as part of the AJAX request.
 
 ```php
 function onSubmitContactForm()
@@ -27,7 +29,35 @@ Every AJAX request should specify a handler name, either using the [data attribu
 <button data-request="onSubmitContactForm">Go</button>
 
 <!-- JavaScript API -->
-<script> oc.request('#mybutton', 'onSubmitContactForm') </script>
+<script> oc.ajax('onSubmitContactForm') </script>
+```
+
+Handlers defined by pages, layouts and components are all registered automatically. If you are calling a handler from inside a partial, use the [`{% ajaxPartial %}` Twig tag](../../markup/tag/ajax-partial.md), which adjusts the page cycle to register its handlers.
+
+### Form Serialization
+
+When an AJAX request occurs inside a HTML form tag, all the input values of the form are available to the handler. In the example below, the `first_name` value will be sent with the request.
+
+```html
+<form id="myForm">
+    <input name="first_name" />
+    <button data-request="onSubmitContactForm">Go</button>
+</form>
+```
+
+The JavaScript API support this logic with the `oc.request` function.
+
+```html
+<script> oc.request('#myForm', 'onSubmitContactForm') </script>
+```
+
+You may use the `input()` PHP function to access the variable.
+
+```php
+function onSubmitContactForm()
+{
+    $firstName = input('first_name');
+}
 ```
 
 ### Generic Handler
@@ -46,14 +76,7 @@ If two components register the same handler name, it is advised to prefix the ha
 <button data-request="mycomponent::onSubmitContactForm">Go</button>
 ```
 
-You may want to use the `__SELF__` reference variable instead of the hard coded alias in case the user changes the component alias used on the page. See the [Component Development article](../../extend/cms-components.md) to learn more.
-
-```html
-<form
-    data-request="{{ __SELF__ }}::onCalculate"
-    data-request-update="'{{ __SELF__ }}::calcresult': '#result'"
->
-```
+See the [Component Development article](../../extend/cms-components.md) to learn more.
 
 ## Redirects in AJAX Handlers
 
@@ -91,29 +114,13 @@ The data can be fetched with the data attributes API.
 The same with the JavaScript API.
 
 ```html
-<form
-    onsubmit="$(this).request('onHandleForm', {
+<form onsubmit="oc.request(this, 'onHandleForm', {
         success: function(data) {
             console.log(data);
         }
-    }); return false;"
+    }); return false"
 >
 ```
-
-## Throwing an AJAX Exception
-
-You may throw an [AJAX exception](../../extend/system/exceptions.md) using the `AjaxException` class to treat the response as an error while retaining the ability to send response contents as normal. Simply pass the response contents as the first argument of the exception.
-
-```php
-throw new AjaxException([
-    'error' => 'Not enough questions',
-    'questionsNeeded' => 2
-]);
-```
-
-::: tip
-When throwing this exception type [partials will be updated](./update-partials.md) as normal.
-:::
 
 ## Running Code Before Handlers
 
@@ -133,4 +140,95 @@ function init()
 {
     // From a component or widget class
 }
+```
+
+## Throwing an AJAX Exception
+
+You may throw an [AJAX exception](../../extend/system/exceptions.md) using the `AjaxException` class to treat the response as an error while retaining the ability to send response contents as normal. Simply pass the response contents as the first argument of the exception.
+
+```php
+throw new AjaxException([
+    'error' => 'Not enough questions',
+    'questionsNeeded' => 2
+]);
+```
+
+These errors are handled by the AJAX framework.
+
+```html
+<form data-request="onHandleForm" data-request-error="console.log(data)">
+```
+
+The same with the JavaScript API.
+
+```html
+<form onsubmit="oc.request(this, 'onHandleForm', {
+        error: function(data) {
+            console.log(data);
+        }
+    }); return false"
+>
+```
+
+::: tip
+When throwing this exception type [partials will be updated](./update-partials.md) as normal.
+:::
+
+## Dispatching Browser Events
+
+::: aside
+Dispatched events are triggered in an AJAX response after the request completes and before partials are updated.
+:::
+
+You may dispatch JavaScript events from AJAX handlers using the `dispatchBrowserEvent` method. This method takes any event name (first argument) and detail variables to pass to the event (second argument), the variables must be compatible with JSON serialization.
+
+```php
+function onPerformAction()
+{
+    $this->dispatchBrowserEvent('app:update-profile');
+
+    $this->dispatchBrowserEvent('app:update-profile', ['name' => 'Jeff']);
+}
+```
+
+In the browser, use the `addEventListener` to listen for the dispatched event when the AJAX request completes. The event variables are available via the `event.detail` object.
+
+```js
+addEventListener('app:update-profile', function (event) {
+    alert('Profile updated with name: ' + event.detail.name);
+});
+```
+
+For example, if you want to show an alert that a document has already been updated by another user, you could dispatch an event to the browser and throw an `AjaxException` to halt the process.
+
+::: tip
+`AjaxException` and `ValidationException` are halting exceptions that support dispatched events.
+```php
+public function onUpdate()
+{
+    $this->dispatchBrowserEvent('app:stale-document');
+
+    throw new AjaxException;
+}
+```
+:::
+
+You can listen to this event in the browser using a generic listener. This example prompts the user before resubmitting the request with a `force` flag set in the data.
+
+```js
+addEventListener('app:stale-document', function (event) {
+    if (confirm('Another user has updated this document, proceed?')) {
+        oc.request(event.target, 'onUpdate', { data: {
+            force: true
+        }});
+    }
+});
+```
+
+To prevent the partials from updating as part of the response, call `preventDefault()` on the event object.
+
+```js
+addEventListener('app:stale-document', function (event) {
+    event.preventDefault();
+});
 ```

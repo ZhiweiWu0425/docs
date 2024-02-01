@@ -5,7 +5,7 @@ subtitle: Adds list management features to any backend page.
 
 The `Backend\Behaviors\ListController` class is a controller behavior used for easily adding a record list to a page. The behavior provides the sortable and searchable list with optional links on its records. The behavior provides the controller action `index` however the list can be rendered anywhere and multiple list definitions can be used.
 
-List behavior depends on list [column definitions](../../element/definitions.md) and a [model class](../database/model.md). In order to use the list behavior you should add it to the `$implement` property of the controller class. Also, the `$listConfig` class property should be defined and its value should refer to the YAML file used for configuring the behavior properties.
+List behavior depends on list [column definitions](../../element/list-columns.md) and a [model class](../database/model.md). In order to use the list behavior you should add it to the `$implement` property of the controller class. Also, the `$listConfig` class property should be defined and its value should refer to the YAML file used for configuring the behavior properties.
 
 ```php
 namespace Acme\Blog\Controllers;
@@ -16,7 +16,7 @@ class Categories extends \Backend\Classes\Controller
         \Backend\Behaviors\ListController::class
     ];
 
-    public $listConfig = 'list_config.yaml';
+    public $listConfig = 'config_list.yaml';
 }
 ```
 
@@ -26,13 +26,10 @@ Very often the list and [form controller](../forms/form-controller.md) are used 
 
 ## Configuring the List Behavior
 
-The configuration file referred in the `$listConfig` property is defined in YAML format. The file should be placed into the controller's [views directory](controllers-ajax.md). Below is an example of a typical list behavior configuration file.
+The configuration file referred in the `$listConfig` property is defined in YAML format. The file should be placed into the controller's [views directory](../system/controllers.md). Below is an example of a typical list behavior configuration file.
 
 ```yaml
-# ===================================
-##  List Behavior Config
-# ===================================
-
+# config_list.yaml
 title: Blog Posts
 list: ~/plugins/acme/blog/models/post/columns.yaml
 modelClass: Acme\Blog\Models\Post
@@ -44,7 +41,7 @@ The following properties are required in the list configuration file.
 Property | Description
 ------------- | -------------
 **title** | a title for this list.
-**list** | a configuration array or reference to a list column definition file, see [list columns](../../element/definitions.md).
+**list** | a configuration array or reference to a list column definition file, see [list columns](../../element/list-columns.md).
 **modelClass** | a model class name, the list data is loaded from this model.
 
 The configuration properties listed below are optional.
@@ -57,16 +54,17 @@ Property | Description
 **noRecordsMessage** | a message to display when no records are found, can refer to a [localization string](../system/localization.md).
 **deleteMessage** | a message to display when records are bulk deleted, can refer to a [localization string](../system/localization.md).
 **noRecordsDeletedMessage** | a message to display when a bulk delete action is triggered, but no records were deleted, can refer to a [localization string](../system/localization.md).
-**recordsPerPage** | records to display per page, use 0 for no pages. Default: 0
-**perPageOptions** | options for number of items per page. Default: [20, 40, 80, 100, 120]
-**showPageNumbers** | displays page numbers with pagination. Disable this to improve list performance when working with large tables. Default: true
+**recordsPerPage** | records to display per page, use 0 for no pages. Default: `0`
+**perPageOptions** | options for number of items per page. Default: `[20, 40, 80, 100, 120]`
+**showPageNumbers** | displays page numbers with pagination. Disable this to improve list performance when working with large tables. Default: `true`
 **toolbar** | reference to a Toolbar Widget configuration file, or an array with configuration (see below).
-**showSorting** | displays the sorting link on each column. Default: true
-**defaultSort** | sets a default sorting column and direction when user preference is not defined. Supports a string or an array with keys `column` and `direction`.
-**showCheckboxes** | displays checkboxes next to each record. Default: false.
-**showSetup** | displays the list column set up button. Default: false.
+**showSorting** | displays the sorting link on each column. Default: `true`
+**defaultSort** | sets a default sorting column and direction when user preference is not defined. Supports a string or an array with keys `column` and `direction`. The direction can be `asc` for ascending (default) or `desc` for descending order.
+**showCheckboxes** | displays checkboxes next to each record. Default: `false`.
+**showSetup** | displays the list column set up button. Default: `false`.
 **structure** | enables a structured list, see the [sorting records article](./structures.md) for more details.
 **customViewPath** | specify a custom view path to override partials used by the list, optional.
+**customPageName** | specify a custom variable name to use in the page URL for paginated records. Set to `false` to disable storing the page number in the URL. Default: `page`.
 
 ### Adding a Toolbar
 
@@ -137,9 +135,13 @@ To filter a list by user defined input, add the following list configuration to 
 filter: $/acme/blog/models/post/scopes.yaml
 ```
 
-The **filter** property should make reference to a [filter configuration file](../backend/filters.md) path or supply an array with the configuration.
+The **filter** property should make reference to a [filter configuration file](./filters.md) path or supply an array with the configuration.
 
 ## Defining List Columns
+
+::: aside
+The available list column properties can be found on the [list column definitions](../../element/list-columns.md) page.
+:::
 
 List columns are defined with the YAML file. The column configuration is used by the list behavior for creating the record table and displaying model columns in the table cells. The file is placed to a subdirectory of the **models** directory of a plugin. The subdirectory name matches the model class name written in lowercase. The file name doesn't matter, but the **columns.yaml** and **list_columns.yaml** are common names. Example list columns file location:
 
@@ -156,112 +158,11 @@ List columns are defined with the YAML file. The column configuration is used by
 The next example shows the typical contents of a list column definitions file.
 
 ```yaml
-# ===================================
-#  List Column Definitions
-# ===================================
-
+# columns.yaml
 columns:
     name: Name
     email: Email
 ```
-
-### Column Properties
-
-For each column can specify these properties (where applicable):
-
-Property | Description
-------------- | -------------
-**label** | a name when displaying the list column to the user.
-**type** | defines how this column should be rendered, see [list column definitions](../../element/definitions.md).
-**default** | specifies the default value for the column if value is empty.
-**searchable** | include this column in the list search results. Default: false.
-**invisible** | specifies if this column is hidden by default. Default: false.
-**sortable** | specifies if this column can be sorted. Default: true.
-**clickable** | if set to false, disables the default click behavior when the column is clicked. Default: true.
-**select** | defines a custom SQL select statement to use for the value.
-**valueFrom** | defines a model attribute to use for the source value.
-**displayFrom** | defines a model attribute to use for the display value.
-**relation** | defines a model relationship column.
-**relationCount** | display the number of related records as the column value. Must be used with the `relation` option. Default: false
-**cssClass** | assigns a CSS class to the column container.
-**headCssClass** | assigns a CSS class to the column header container.
-**width** | sets the column width, can be specified in percents (10%) or pixels (50px). There could be a single column without width specified, it will be stretched to take the available space.
-**align** | specifies the column alignment. Possible values are `left`, `right` and `center`.
-**permissions** | the [permissions](../backend/permissions.md) that the current backend user must have in order for the column to be used. Supports either a string for a single permission or an array of permissions of which only one is needed to grant access.
-
-### Custom Value Selection
-
-It is possible to change the source and display values for each column. If you want to source the column value from another column, do so with the `valueFrom` option.
-
-```yaml
-other_name:
-    label: Something Great
-    valueFrom: name
-```
-
-If you want to keep the source column value but display a different value from the model attribute, use the `displayFrom` option.
-
-```yaml
-status_code:
-    label: Status
-    displayFrom: status_label
-```
-
-This is mostly applicable when a [model accessor](../database/mutators.md) is used to modify the display value. This is useful where you want to display a certain value, but sort and search by a different value.
-
-```php
-public function getStatusLabelAttribute()
-{
-    return title_case($this->status_code);
-}
-```
-
-### Nested Column Selection
-
-In some cases it makes sense to retrieve a column value from a nested data structure, such as a [model relationship](../database/relations.md) column or a [jsonable array](../system/models.md). The only drawback of doing this is the column cannot use searchable or sortable options.
-
-```yaml
-content[title]:
-    name: Title
-    sortable: false
-```
-
-The above example would look for the value in PHP equivalent of `$record->content->title` or `$record->content['title']` respectively. To make the column searchable, and for performance reasons, we recommend duplicating its value on the local database table using [model events](../database/model.md).
-
-### Direct SQL Selection
-
-The `select` property allows you to create a column using a custom select statement. Any valid SQL SELECT statement works here.
-
-```yaml
-full_name:
-    label: Full Name
-    select: concat(first_name, ' ', last_name)
-```
-
-### Related Column Selection
-
-The `relation` property allows you to display related columns, you can provide a relationship option. The value of this option has to be the name of the Active Record [relationship](../database/relations.md) on your model. In the next example the **name** value will be translated to the name attribute found in the related model (eg: `$model->name`).
-
-```yaml
-group_name:
-    label: Group
-    relation: groups
-    select: name
-```
-
-To display a column that shows the number of related records, use the `relationCount` property.
-
-```yaml
-users_count:
-    label: Users
-    relation: users
-    relationCount: true
-    type: number
-```
-
-::: warning
-Be careful not to name relations the same as existing database columns. For example, using a name `group_id` could break the group relation due to a naming conflict.
-:::
 
 ## Displaying the List
 
@@ -372,24 +273,16 @@ For example, to modify the list body row markup, create a file called `list/_lis
 
 ### Extending Column Definitions
 
-You may extend the columns of another controller from outside by calling the `extendListColumns` static method on the controller class. This method can take two arguments, **$list** will represent the Lists widget object and **$model** represents the model used by the list. Take this controller for example.
+You may extend the columns of another controller from outside by binding to the `backend.list.extendColumns` [global event](../services/event.md). The event function will take a `$list` argument that represents the `Backend\Widgets\Lists` object, where you can use the `getController` and `getModel` methods to check the execution context.
+
+Since this event has the potential to affect all lists, it is essential to check that the controller and model is of the correct type. Here is an example using the `addColumns` method to add new columns to the event log list, and modify an existing column.
 
 ```php
-class Categories extends \Backend\Classes\Controller
-{
-    public $implement = [
-        \Backend\Behaviors\ListController::class
-    ];
-
-    public $listConfig = 'list_config.yaml';
-}
-```
-
-Using the `extendListColumns` method you can add extra columns to any list rendered by this controller. It is a good idea to check the **$model** is of the correct type. Here is an example.
-
-```php
-Categories::extendListColumns(function($list, $model) {
-    if (!$model instanceof MyModel) {
+Event::listen('backend.list.extendColumns', function($list) {
+    if (
+        !$list->getController() instanceof \System\Controllers\EventLogs ||
+        !$list->getModel() instanceof \System\Models\EventLog
+    ) {
         return;
     }
 
@@ -407,12 +300,14 @@ Categories::extendListColumns(function($list, $model) {
 });
 ```
 
-You may also extend the list columns internally by overriding the `listExtendColumns` method inside the controller class.
+You may also extend the list columns internally by overriding the `listExtendColumns` method inside the controller class. This will only affect the list used by the `ListController` behavior.
 
 ```php
 class Categories extends \Backend\Classes\Controller
 {
-    // ...
+    public $implement = [
+        \Backend\Behaviors\ListController::class
+    ];
 
     public function listExtendColumns($list)
     {
@@ -423,7 +318,7 @@ class Categories extends \Backend\Classes\Controller
 }
 ```
 
-The following methods are available on the $list object.
+The following methods are available on the `$list` object.
 
 Method | Description
 ------------- | -------------
@@ -431,7 +326,7 @@ Method | Description
 **removeColumn** | removes a column from the list
 **getColumn** | returns an existing column definition
 
-Each method takes an array of columns similar to the [list column configuration](../../element/definitions.md).
+Each method takes an array of columns similar to the [list column configuration](../../element/list-columns.md).
 
 ### Inject CSS Row Class
 
@@ -500,32 +395,42 @@ public function listOverrideRecordUrl($record, $definition = null)
 
 ### Extending Filter Scopes
 
-You may extend the filter scopes of another controller from outside by calling the `extendListFilterScopes` static method on the controller class. This method can take the argument **$filter** which will represent the Filter widget object. Take this controller for example:
+You may extend the filter scopes of another controller by binding to the `backend.filter.extendScopes` [global event](../services/event.md). This method can take the argument `$filter` which will represent the `Backend\Widgets\Filter` object, where you can use the `getController`, `getModel` and `getContext` methods to check the execution context.
+
+Since this event has the potential to affect all filters, it is essential to check that the controller and model is of the correct type. Here is an example using the `addScopes` method to add new fields to the event log list, and adjust the CSS classes.
 
 ```php
-Categories::extendListFilterScopes(function($filter) {
-    // Add custom CSS classes to the filter widget
-    $filter->cssClasses = array_merge(
-        $filter->cssClasses,
-        ['my', 'array', 'of', 'classes']
-    );
+Event::listen('backend.filter.extendScopes', function($filter) {
+    if (
+        !$filter->getController() instanceof \System\Controllers\EventLogs ||
+        !$filter->getModel() instanceof \System\Models\EventLog
+    ) {
+        return;
+    }
 
+    // Add a new scope
     $filter->addScopes([
         'my_scope' => [
             'label' => 'My Filter Scope'
         ]
     ]);
+
+    // Add custom CSS classes to the filter widget
+    $filter->cssClasses = array_merge(
+        $filter->cssClasses,
+        ['my-array', 'of-classes']
+    );
 });
 ```
-
-The array of scopes provided is the same as the [list filters configuration](./filters.md).
 
 You may also extend the filter scopes internally to the controller class, simply override the `listFilterExtendScopes` method.
 
 ```php
 class Categories extends \Backend\Classes\Controller
 {
-    // ...
+    public $implement = [
+        \Backend\Behaviors\ListController::class
+    ];
 
     public function listFilterExtendScopes($filter)
     {
@@ -534,13 +439,26 @@ class Categories extends \Backend\Classes\Controller
 }
 ```
 
-The following methods are available on the $filter object.
+The following methods are available on the `$filter` object. The scopes available are the same as the [list filters configuration](./filters.md).
 
 Method | Description
 ------------- | -------------
-**addScopes** | adds new scopes to filter widget
+**addScopes** | adds new scopes to filter widget using [list filters configuration](./filters.md)
 **removeScope** | remove scope from filter widget
 **getScope** | returns an existing scope definition
+
+#### Extending the Filter Response
+
+The `listExtendRefreshResults` method can interact with the AJAX update response when the list updates, and should return an array of additional partial updates. The `listGetFilterWidget` will return the filter widget for access to the scopes.
+
+```php
+public function listExtendRefreshResults($filter, $result)
+{
+    $statusCode = $this->listGetFilterWidget()->getScope('status_code')->value;
+
+    return ['#my-partial-id' => $this->makePartial(...)];
+}
+```
 
 ### Extending the Model Query
 
@@ -583,7 +501,7 @@ public function listExtendQuery($query, $definition = null)
 }
 ```
 
-The [list filter](../backend/filters.md) model query can also be extended by overriding the `listFilterExtendQuery` method:
+The [list filter](./filters.md) model query can also be extended by overriding the `listFilterExtendQuery` method.
 
 ```php
 public function listFilterExtendQuery($query, $scope)
@@ -632,10 +550,7 @@ public function evalUppercaseListColumn($value, $column, $record)
 Using the custom list column type is as simple as calling it by name using the `type` property.
 
 ```yaml
-# ===================================
-#  List Column Definitions
-# ===================================
-
+# columns.yaml
 columns:
     secret_code:
         label: Secret code

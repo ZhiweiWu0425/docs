@@ -1,3 +1,6 @@
+---
+subtitle: Form Field
+---
 # Radio List
 
 The `radio` field renders a list of radio options, where only one item can be selected at a time. Radio fields support the same methods for defining the options as the [dropdown field type](./field-dropdown.md).
@@ -12,13 +15,16 @@ security_level:
         guests: Guests only
 ```
 
-The following properties are supported.
+The following [field properties](../form-fields.md) are commonly used.
 
 Property | Description
 ------------- | -------------
-**options** | available options for the dropdown, as an array or method name.
+**label** | a name when displaying the form field to the user.
 **default** | a default value to use for new records.
+**options** | available options for the radio list, as an array.
+**optionsMethod** | take options from a method defined on the model or as a static method, eg `Class::method`.
 **cssClass** | used for setting the options as inline.
+**inlineOptions** | display the options side-by-side instead of stacked.
 
 You may use the `default` property to set a default value, where the value is the key of the option.
 
@@ -41,16 +47,16 @@ security_level:
         guests: [Guests only, Only guest users will be able to access this page.]
 ```
 
-To visually display the options side-by-side instead of stacked, use the `cssClass` property to specify a value of **inline-options**.
+To visually display the options side-by-side instead of stacked, set the `inlineOptions` property to a `true` value.
 
 ```yaml
 security_level:
     type: radio
     label: Access Level
-    cssClass: inline-options
+    inlineOptions: true
 ```
 
-## Server-side Options
+## Dynamic Options
 
 Radio lists support the same methods for defining the options as the [dropdown field type](./field-dropdown.md).
 

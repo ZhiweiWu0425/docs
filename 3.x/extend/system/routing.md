@@ -3,7 +3,7 @@ subtitle: Useful for defining fixed APIs and endpoints.
 ---
 # Routing & Middleware
 
-While routing is handled automatically for the [backend controllers](../system/controllers.md) and CMS pages define their own URL routes in their [page configuration](../../cms/themes/pages.md). Plugins can also supply a file named **routes.php** that contain custom routing logic, as defined in the [Laravel router service](https://laravel.com/docs/9.x/routing).
+While routing is handled automatically for the [backend controllers](../system/controllers.md) and CMS pages define their own URL routes in their [page configuration](../../cms/themes/pages.md). Plugins can also supply a file named **routes.php** that contain custom routing logic, as defined in the [Laravel router service](https://laravel.com/docs/10.x/routing).
 
 ::: dir
 ├── plugins
@@ -31,7 +31,7 @@ $url = Url::to('api_acme_blog/cleanup_posts');
 
 ## Basic Routing
 
-To define routes, the PHP method will assocaite to the HTTP method, which supports `get`, `post`, `patch`, `put`, `options` and `delete`. The most basic routes simply accept a URI and a `Closure`.
+To define routes, the PHP method will associate to the HTTP method, which supports `get`, `post`, `patch`, `put`, `options` and `delete`. The most basic routes simply accept a URI and a `Closure`.
 
 ```php
 Route::get('/', function () {
@@ -74,7 +74,7 @@ Route::any('foo', function () {
 For larger applications it is preferable to organize routes inside classes instead of a closure. The best place to put these classes is in the **handlers** directory. The route can be referenced as an array that takes the class name and method name. In this example the `/install` route is mapped to the `Installer` class and `install` method.
 
 ```php
-Route::any('/install', [Installer::class, 'index']);
+Route::any('/install', [Installer::class, 'install']);
 ```
 
 Next, define the class and the route inside. In this example the file is located in **app/handlers/Installer.php**.
@@ -96,7 +96,7 @@ class Installer extends \Illuminate\Routing\Controller
 
 ## Route Parameters
 
-To capture segments of the URI within your route, you may do so by defining route parameters. Ror example, capturing a user's ID from the URL.
+To capture segments of the URI within your route, you may do so by defining route parameters. For example, capturing a user's ID from the URL.
 
 ```php
 Route::get('user/{id}', function ($id) {
@@ -201,7 +201,7 @@ Route groups allow you to share route attributes across a large number of routes
 Route groups may also be used to route wildcard sub-domains. Sub-domains may be assigned route parameters just like route URIs, allowing you to capture a portion of the sub-domain for usage in your route or controller. The sub-domain may be specified using the `domain` key on the group attribute array:
 
 ```php
-Route::group(['domain' => '{account}.example.com'], function () {
+Route::group(['domain' => '{account}.example.tld'], function () {
     Route::get('user/{id}', function ($account, $id) {
         //
     });
@@ -247,7 +247,7 @@ Route::group(['middleware' => \Path\To\Your\Middleware::class], function() {
 });
 ```
 
-And finally, if you want to assign a group of middleware to just one route you can it like this
+And finally, if you want to assign a group of middleware to just one route you can do it like this
 
 ```php
 Route::middleware([\Path\To\Your\Middleware::class])->group(function() {
@@ -255,7 +255,9 @@ Route::middleware([\Path\To\Your\Middleware::class])->group(function() {
 });
 ```
 
-You can of course add more than one middleware in a group, just one is used in the above examples for convenience.
+::: tip
+You can add more than one middleware in a group, only one is used in the above examples for convenience.
+:::
 
 ## Global Middleware
 
@@ -298,6 +300,6 @@ You may also manually throw an instance of `October\Rain\Exception\NotFoundExcep
 #### See Also
 
 ::: also
-* [Laravel Routing](https://laravel.com/docs/9.x/routing)
-* [Eloquent API Resources](https://laravel.com/docs/9.x/eloquent-resources)
+* [Laravel Routing](https://laravel.com/docs/10.x/routing)
+* [Eloquent API Resources](https://laravel.com/docs/10.x/eloquent-resources)
 :::

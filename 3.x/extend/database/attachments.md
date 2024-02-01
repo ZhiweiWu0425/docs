@@ -21,112 +21,147 @@ public $attachMany = [
 ```
 
 ::: warning
-Make sure that your model's database table does not already have an attribute that uses the same name as your attachment relationship. If it does, it will cause a naming conflict and create problems.
+To avoid a naming collision, make sure that your model's database table does not already have an attribute that uses the same name as your attachment relationship.
 :::
 
-Protected attachments are uploaded to the application's **uploads/protected** directory which is not accessible for the direct access from the Web. A protected file attachment is defined by setting the *public* argument to `false`.
+Protected attachments are uploaded to the application's **uploads/protected** directory which is not accessible for the direct access from the Web. A protected file attachment is defined by setting the `public` property to `false`.
 
 ```php
 public $attachOne = [
-    'avatar' => ['System\Models\File', 'public' => false]
+    'avatar' => [\System\Models\File::class, 'public' => false]
 ];
 ```
 
 ## Creating New Attachments
 
-For singular attach relations (`$attachOne`), you may create an attachment directly via the model relationship, by setting its value using the `Input::file` method, which reads the file data from an input upload.
+For singular attach relations (`$attachOne`), you may create an attachment directly via the model relationship, by setting its value using the `files` function, which reads the file data from an input upload.
 
 ```php
-$model->avatar = Input::file('file_input');
+$model->avatar = files('file_input');
 ```
 
-You may also pass a string to the `data` attribute that contains an absolute path to a local file.
+To associate a new file from a local path, use the `System\Models\File` model and `fromFile` method.
 
 ```php
-$model->avatar = '/path/to/somefile.jpg';
+$model->avatar = (new File)->fromFile('/path/to/somefile.jpg');
 ```
 
-Sometimes it may also be useful to create a `File` instance directly from (raw) data:
+To create a file directly from (raw) data, use the `fromData` method to pass the contents (first argument) and a file name (second argument).
 
 ```php
-$file = (new System\Models\File)->fromData('Some content', 'sometext.txt');
+$model->avatar = (new File)->fromData('Some content', 'sometext.txt');
 ```
 
-For multiple attach relations (`$attachMany`), you may use the `create` method on the relationship instead, notice the file object is associated to the `data` attribute. This approach can be used for singular relations too, if you prefer.
+You can also add a file from a URL using the `fromUrl` method. To use this method, you need install cURL PHP Extension.
 
 ```php
-$model->avatar()->create(['data' => Input::file('file_input')]);
+$model->avatar = (new File)->fromUrl('https://example.tld/path/to/avatar.jpg');
+```
+
+Optionally, you may specify a custom file name (second argument).
+
+```php
+$model->avatar = (new File)->fromUrl('https://example.tld/avatar.jpg', 'customname.jpg');
+```
+
+### Handling Multiple Attachments
+
+For multiple attach relations (`$attachMany`), you can pass an array of values from the `files()` function.
+
+```php
+$model->photos = (array) files('multi_file');
+```
+
+You may use the `create` method to append a file on an existing relationship instead, notice the file object is associated to the `data` attribute. This approach can be used for singular relations too, if you prefer.
+
+```php
+$model->photos()->create(['data' => files('file_input')]);
+```
+
+You may use the `add` method on the relationship to work directly with a `System\Models\File` model.
+
+```php
+$model->photos()->add((new File)->fromFile('/path/to/somefile.jpg'));
 ```
 
 Alternatively, you can prepare a File model before hand, then manually associate the relationship later. Notice the `is_public` attribute must be set explicitly using this approach.
 
 ```php
 $file = new System\Models\File;
-$file->data = Input::file('file_input');
+$file->data = files('file_input');
 $file->is_public = true;
 $file->save();
 
-$model->avatar()->add($file);
-```
-
-You can also add a file from a URL. To work this method, you need install cURL PHP Extension.
-
-```php
-$file = new System\Models\File;
-$file->fromUrl('https://example.com/uploads/public/path/to/avatar.jpg');
-
-$user->avatar()->add($file);
-```
-
-Occasionally you may need to change a file name. You may do so by using second method parameter.
-
-```php
-$file->fromUrl('https://example.com/uploads/public/path/to/avatar.jpg', 'somefilename.jpg');
+$model->photos()->add($file);
 ```
 
 ## Viewing Attachments
 
-The `getPath` method returns the full URL of an uploaded public file. The following code would print something like **example.com/uploads/public/path/to/avatar.jpg**
+The `getUrl` method returns the full URL of an uploaded public file. The following code would print something like **example.tld/uploads/public/path/to/avatar.jpg**.
 
 ```php
-echo $model->avatar->getPath();
+echo $model->avatar->getUrl();
 ```
 
-Returning multiple attachment file paths:
+Returning multiple attachment file paths.
 
 ```php
 foreach ($model->photos as $photo) {
-    echo $photo->getPath();
+    echo $photo->getUrl();
 }
 ```
 
-The `getLocalPath` method will return an absolute path of an uploaded file in the local filesystem.
+Displaying a file on the page using Twig.
+
+```twig
+<img src="{{ model.avatar.url }}" alt="Description Image" />
+```
+
+### Accessing the Local Path
+
+The `getLocalPath` method will return an absolute path of an uploaded file in the local filesystem. If using an external driver such as S3, this method will download the contents to a temporary location in the local filesystem.
 
 ```php
 echo $model->avatar->getLocalPath();
 ```
 
-To output the file contents directly, use the `output` method, this will include the necessary headers for downloading the file:
+## Resizing Thumbs
 
-```php
-echo $model->avatar->output();
-```
-
-You can resize an image with the `getThumb` method. The method takes 3 parameters - image width, image height and the options parameter.
+You can resize an image with the `getThumbUrl` method. The method takes 3 parameters - image width, image height and the options parameter.
 
 The **width** and **height** parameters should be specified as a number or as the **auto** word for the automatic proportional scaling.
 
 ```php
-echo $model->avatar->getThumb(100, 100, ['mode' => 'crop']);
+echo $model->avatar->getThumbUrl(100, 100, ['mode' => 'crop']);
 ```
 
-Displaying an image on the page.
+Displaying an image on the page using Twig.
 
 ```twig
-<img src="{{ model.avatar.getThumb(100, 100, {'mode':'exact', 'quality': 80, 'extension': 'webp'}) }}" alt="Description Image" />
+<img src="{{ model.avatar.thumbUrl(100, 100, { mode: 'exact', quality: 80, extension: 'webp' }) }}" alt="Description Image" />
 ```
 
-Read more about the available options for `getThumb` on the [image resizer article](../services/resizer.md).
+Read more about the available options for `getThumbUrl` on the [image resizer article](../services/resizer.md).
+
+## Output and Download
+
+To output the file contents directly, use the `output` method, this return a [response object](../services/response-view.md) that will include the necessary headers for displaying the file in a browser.
+
+```php
+return $model->avatar->output();
+```
+
+You can output the contents to the browser by chaining the `send` method.
+
+```php
+$model->avatar->output()->send();
+```
+
+Return the `download` method to download the file as a response.
+
+```php
+return $model->avatar->download();
+```
 
 ## Usage Example
 
@@ -185,16 +220,18 @@ if ($fileFromPost) {
 Display the uploaded file on a page:
 
 ```php
+<?php
 // Find the Blog Post model again
 $post = Post::find(1);
 
 // Look for the featured image address, otherwise use a default one
 if ($post->featured_image) {
-    $featuredImage = $post->featured_image->getPath();
+    $featuredImage = $post->featured_image->getUrl();
 }
 else {
     $featuredImage = 'http://placehold.it/220x300';
 }
+?>
 
 <img src="<?= $featuredImage ?>" alt="Featured Image" />
 ```
@@ -232,11 +269,9 @@ class Gallery extends Model
     ];
 
     public $rules = [
-        'photos'   => 'required',
-        'photos.*' => 'image|max:1000|dimensions:min_width=100,min_height=100'
+        'photos' => ['required'],
+        'photos.*' => ['image', 'max:1000', 'dimensions:min_width=100,min_height=100'],
     ];
-
-    /* some other code */
 }
 ```
 

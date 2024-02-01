@@ -1,3 +1,6 @@
+---
+subtitle: Filter Scope
+---
 # Number
 
 `number` - filter using a numeric value using `exact`, `between`, `greater` and `lesser` condition logic.
@@ -6,9 +9,34 @@
 age:
     label: Age
     type: number
-    default: 14
     conditions:
         greater: true
+```
+
+The following properties are available for the filter.
+
+Property | Description
+------------- | -------------
+**default** | specifies a default value for the filter.
+**conditions** | for each condition, set to `true` or `false` to make it available, or as a string, can be custom SQL statement for selected conditions. Default: `true`.
+**modelScope** | applies a [query scope method](../../extend/database/model.md) to the filter query, can be a model method name or a static PHP class method (`Class::method`). The first argument will contain the model that the widget will be attaching its value to, i.e. the parent model.
+
+The following `conditions` are available for filtering.
+
+Condition | Description
+------------- | -------------
+**exact** | is matching the exact number
+**between** | is between two supplied numbers
+**greater** | is greater than the supplied number
+**lesser** | is less than the supplied number
+
+You may set `default` value to set the default filter value.
+
+```yaml
+age:
+    label: Age
+    type: number
+    default: 14
 ```
 
 You may pass custom SQL to the conditions as a string where `:value`, `:min` and `:max` contain the filtered values.
@@ -19,15 +47,17 @@ age:
     type: number
     conditions:
         greater: age >= :value
-        between: age >= ':min' and age <= ':max'
+        between: age >= :min and age <= :max
 ```
 
-Alternatively, you may define a custom `modelScope` in the model using the following example.
+## PHP Interface
+
+You may define a custom `modelScope` in the model using the following example.
 
 ```yaml
 age:
     label: Age
-    type: text
+    type: number
     modelScope: numberFilter
 ```
 

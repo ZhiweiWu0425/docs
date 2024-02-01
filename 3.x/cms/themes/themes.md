@@ -1,5 +1,5 @@
 ---
-subtitle: Define the appearance of your website or web application.
+subtitle: Build your website using a simple file structure.
 ---
 # Themes
 
@@ -43,7 +43,7 @@ Below, you can see an example theme directory structure. Each theme represents a
 
 ### Subdirectories
 
-October CMS supports a single level of subdirectories for **pages**, **partials**, **layouts** and **content** files, while the **assets** directory can have an unlimited depth. This approach simplifies the organization of large websites. In the example directory structure below, the **pages** and **partials** directories contain the **blog** subdirectory, and the **content** directory contains the **home** subdirectory.
+October CMS supports a depth of five subdirectories for **pages**, **partials**, **layouts** and **content** files, while the **assets** directory can have an unlimited depth. This approach simplifies the organization of large websites. In the example directory structure below, the **pages** and **partials** directories contain the **blog** subdirectory, and the **content** directory contains the **home** subdirectory.
 
 ::: dir
 ├── themes
@@ -80,21 +80,25 @@ The template paths are always absolute. If in a partial you render another parti
 
 Pages, partials and layout templates can include up to 3 sections: **configuration**, **PHP code**, and **Twig markup**. Sections are separated with the `==` sequence.
 
-```php
+::: cmstemplate
+```ini
 url = "/blog"
 layout = "default"
-==
+```
+```php
 function onStart()
 {
-    $this['posts'] = ...;
+    $this['posts'] = [...];
 }
-==
+```
+```twig
 <h3>Blog archive</h3>
 {% for post in posts %}
     <h4>{{ post.title }}</h4>
     {{ post.content }}
 {% endfor %}
 ```
+:::
 
 ### Configuration Section
 
@@ -112,30 +116,36 @@ parameter = "value"
 
 The code in the PHP section executes every time before the template is rendered. The PHP section is optional for all CMS templates and its contents depend on the template type where it is defined. The PHP code section can contain optional open and close PHP tags to enable syntax highlighting in text editors. The open and close tags should always be specified on a different line to the section separator `==`.
 
-```php
+::: cmstemplate
+```ini
 url = "/blog"
 layout = "default"
-==
+```
+```php
 <?
 function onStart()
 {
     $this['posts'] = [...];
 }
 ?>
-==
+```
+```twig
 <h3>Blog archive</h3>
 {% for post in posts %}
     <h4>{{ post.title }}</h4>
     {{ post.content }}
 {% endfor %}
 ```
+:::
 
-In the PHP section, you can only define functions and refer to namespaces with the PHP `use` keyword. No other PHP code is allowed in the PHP section. This is because the PHP section is converted to a PHP class when the page is parsed. Example of using a namespace reference:
+In the PHP section, you can only define functions and refer to namespaces with the PHP `use` keyword. No other PHP code is allowed in the PHP section. This is because the PHP section is converted to a PHP class when the page is parsed. Here is an example of using a namespace reference.
 
-```php
+::: cmstemplate
+```ini
 url = "/blog"
 layout = "default"
-==
+```
+```php
 <?
 use Acme\Blog\Classes\Post;
 
@@ -144,8 +154,10 @@ function onStart()
     $this['posts'] = Post::get();
 }
 ?>
-==
 ```
+```twig
+```
+:::
 
 As a general way of setting variables, you should use the array access method on `$this`, although for simplicity you can use **object access as read-only**, for example:
 
@@ -159,6 +171,28 @@ echo $this['foo'];
 // Read-only via object
 echo $this->foo;
 ```
+
+When defining functions, they become available as methods via the `$this` property in PHP and `this` variable in Twig. The following example defines a **doSomething** function and calls the method in both places.
+
+::: cmstemplate
+```ini
+url = "/"
+```
+```php
+function onStart()
+{
+    $this['foo'] = $this->doSomething();
+}
+
+function doSomething()
+{
+    return 'bar';
+}
+```
+```twig
+<h3>{{ this.doSomething() }}</h3>
+```
+:::
 
 ### Twig Markup Section
 

@@ -1,3 +1,6 @@
+---
+subtitle: Form UI
+---
 # Hint
 
 The `hint` UI element identical to the [partial element](./ui-partial.md) but renders inside a hint container that can be dismissed by the user.
@@ -8,7 +11,7 @@ _hint1:
     path: content_field
 ```
 
-The following properties are supported.
+The following [field properties](../form-fields.md) are supported.
 
 Property | Description
 ------------- | -------------

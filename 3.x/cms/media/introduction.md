@@ -6,17 +6,15 @@ October CMS ships with a media manager built in, making it easy to publish large
 
 ## Linking to Media
 
-In most cases the complete URL will be used when inserting media assets in to your content. However, it is also possible to generate these URLs from their relative paths in the media directory using the `|media` [twig filter](../../markup/filter/media.md).
+In most cases the complete URL will be used when inserting media assets in to your content. However, it is also possible to generate these URLs from their relative paths in the media directory using the `|media` [Twig filter](../../markup/filter/media.md).
 
 ```twig
 {{ 'relative/path/to/asset.jpg'|media }}
 ```
 
-You may also generate URLs in PHP using the `MediaLibrary` class.
-
-```php
-Media\Classes\MediaLibrary::url('relative/path/to/asset.jpg');
-```
+::: tip
+View the [Media filter article](../../markup/filter/media.md) to learn more.
+:::
 
 ## Configuration Options
 
@@ -38,16 +36,6 @@ There are several options that allow you to fine-tune the Media Manager, which a
 ```
 
 The configuration that specifies where media files are kept is in the system configuration file, see the [Providers article](./providers.md) on using third party providers such as Amazon S3.
-
-#### SVG uploads are disabled by default
-
-For security reasons, uploading SVG graphic files is disabled in October CMS by default. This is because there is potential for malicious code to be executed when the SVG file renders on the page.
-
-To allow the use of SVG files in the backend, simply add it to the list of image extensions.
-
-```php
-'image_extensions' => [..., 'svg'],
-```
 
 ## Audio and Video Players
 

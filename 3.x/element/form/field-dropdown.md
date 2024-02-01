@@ -1,3 +1,6 @@
+---
+subtitle: Form Field
+---
 # Dropdown
 
 The `dropdown` field renders a dropdown with specified options. There are a number of ways to provide the dropdown options, most of them involve specify the `options` value.
@@ -12,14 +15,17 @@ status_type:
         archived: Archived
 ```
 
-The following properties are supported.
+The following [field properties](../form-fields.md) are supported and commonly used.
 
 Property | Description
 ------------- | -------------
-**options** | available options for the dropdown, as an array or method name.
-**default** | a default value to use for new records.
-**emptyOption** | text to display when allowing an empty option.
+**title** | title for the form field.
 **placeholder** | text to display when the field is empty.
+**default** | a default value to use for new records.
+**comment** | places a descriptive comment below the field.
+**options** | available options for the dropdown, as an array.
+**optionsMethod** | take options from a method defined on the model or as a static method, eg `Class::method`.
+**emptyOption** | text to display when allowing an empty option.
 **showSearch** | allow the user to search options. Default: `true`.
 
 Generally `options` are defined with key-value pair, where the value and label are independently specified.
@@ -70,7 +76,7 @@ status:
     showSearch: false
 ```
 
-## Server-side Options
+## Dynamic Options
 
 The next approaches involve using the model class in your plugin or application codebase. If the `options` value is omitted, the framework expects a method with the name `get*FieldName*Options` to be defined in the model.
 
@@ -159,7 +165,7 @@ If you want to call a method on an external class, you may do it by calling a st
 status:
     label: Blog Post Status
     type: dropdown
-    options: \MyAuthor\MyPlugin\Helpers\FormHelper::staticMethodOptions
+    options: MyAuthor\MyPlugin\Helpers\FormHelper::staticMethodOptions
 ```
 
 This examples shows the static method defined on any helper class. The first argument is the Model object and the second argument is the form field definition.

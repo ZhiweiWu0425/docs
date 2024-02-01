@@ -10,15 +10,14 @@ October CMS provides features for sorting and reordering database records. For b
 The [List Controller](./list-controller.md) and [Relation Controller](../forms/form-controller.md) backend behaviors currently support the option to reorder records using the **structure** property in the relevant definition. When defined, the page displays a list of records with a drag handle allowing them to be sorted and restructured.
 
 ```yaml
-# ===================================
-#  List Behavior Config
-# ===================================
+# config_list.yaml
 
 # ...
 
 structure:
     showTree: true
     showReorder: true
+    showSorting: false
     maxDepth: 2
 ```
 
@@ -29,8 +28,10 @@ Property | Description
 **showTree** | displays a tree hierarchy for parent/child records. Default: `true`
 **treeExpanded** | if tree nodes should be expanded by default. Default: `true`
 **showReorder** | displays an interface for reordering records. Default: `true`
+**showSorting** | allows sorting records, disables the structure when sorted. Default: `true`
 **maxDepth** | defines the maximum levels allowed for reordering. Default: `null`
 **dragRow** | allow dragging the entire row in addition to the reorder handle. Default: `true`
+**permissions** | the [permissions](../../extend/backend/permissions.md) that the current backend user must have to modify the structure. Supports either a string for a single permission or an array of permissions of which only one is needed to grant access.
 
 ## Supported Model Types
 

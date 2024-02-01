@@ -411,6 +411,40 @@ $users = Db::table('users')
     ->get();
 ```
 
+### Search Statement
+
+The `searchWhere` and `orSearchWhere` methods can be used to perform a search query on a column's value. The method will add to the query using the search term (first argument) and search columns (second argument) using a case insensitive `like` query.
+
+```php
+$pages = Db::table('posts')
+    ->searchWhere('foo bar', ['title', 'content'])
+    ->get();
+```
+
+The example above will produce the following SQL, where each column and value has `lower()` applied to it:
+
+```sql
+select * from users where
+    (title like '%foo%' and title like '%bar%') or
+    (content like '%foo%' and content like '%bar%')
+```
+
+By default each word in the search term will be searched, however, you can modify this behavior by suppling a mode (third argument), with the following modes supported.
+
+- **all**: result must contain all words (default)
+- **any**: result can contain any word
+- **exact**: result must contain the exact phrase
+
+```php
+$query->searchWhere('foo bar', ['title', 'content'], 'exact');
+```
+
+The `exact` search example above will produce the following SQL:
+
+```sql
+select * from users where (title like '%foo bar%' or content like '%foo bar%')
+```
+
 ## Compound Where Clauses
 
 Sometimes you may need to create more advanced where clauses such as "where exists" or nested parameter groupings. The Laravel query builder can handle these as well. To get started, let's look at an example of grouping constraints within parenthesis:
@@ -589,7 +623,7 @@ The query builder also provides an `insert` method for inserting records into th
 
 ```php
 Db::table('users')->insert(
-    ['email' => 'john@example.com', 'votes' => 0]
+    ['email' => 'john@example.tld', 'votes' => 0]
 );
 ```
 
@@ -597,8 +631,8 @@ You may even insert several records into the table with a single call to `insert
 
 ```php
 Db::table('users')->insert([
-    ['email' => 'taylor@example.com', 'votes' => 0],
-    ['email' => 'dayle@example.com', 'votes' => 0]
+    ['email' => 'taylor@example.tld', 'votes' => 0],
+    ['email' => 'dayle@example.tld', 'votes' => 0]
 ]);
 ```
 
@@ -608,7 +642,7 @@ If the table has an auto-incrementing id, use the `insertGetId` method to insert
 
 ```php
 $id = Db::table('users')->insertGetId(
-    ['email' => 'john@example.com', 'votes' => 0]
+    ['email' => 'john@example.tld', 'votes' => 0]
 );
 ```
 
@@ -635,7 +669,7 @@ The `updateOrInsert` method will first attempt to locate a matching database rec
 ```php
 Db::table('users')
     ->updateOrInsert(
-        ['email' => 'john@example.com', 'name' => 'John'],
+        ['email' => 'john@example.tld', 'name' => 'John'],
         ['votes' => '2']
     );
 ```
@@ -740,3 +774,9 @@ Db::table('users')->where('votes', '>', 100)->dd();
 
 Db::table('users')->where('votes', '>', 100)->dump();
 ```
+
+#### See Also
+
+::: also
+* [Laravel Query Builder](https://laravel.com/docs/10.x/queries)
+:::

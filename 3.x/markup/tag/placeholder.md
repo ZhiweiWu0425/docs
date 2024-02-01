@@ -77,6 +77,12 @@ The variable can be accessed inside the layout template using the `placeholder()
 </ul>
 ```
 
+A default value (second argument) can be supplied as a fallback.
+
+```twig
+{% set active = placeholder('activeNav', 'home') }} %}
+```
+
 ## Custom Attributes
 
 The `placeholder` tag accepts two optional attributes &mdash; `title` and `type`. The `title` attribute is not used by the CMS itself, but could be used by other plugins. The type attribute manages the placeholder type. There are two types supported at the moment &mdash; **text** and **html**. The content of text placeholders is escaped before it's displayed. The title and type attributes should be defined after the placeholder name and the `default` attribute, if it's presented. Example:
@@ -91,4 +97,95 @@ Example of a placeholder with a default content, title and type attributes.
 {% placeholder ordering default title="Ordering information" type="text" %}
     There is no ordering information for this product.
 {% endplaceholder %}
+```
+
+## System Placeholders
+
+October CMS defines static placeholders that are used by the system. Packages will use these placeholders to inject their dependencies to the page, either using the PHP or Twig interface.
+
+### {% scripts %}
+
+The `{% scripts %}` tag inserts JavaScript file references to scripts injected by the application. The tag is commonly defined before the closing BODY tag.
+
+```twig
+<body>
+    ...
+    {% scripts %}
+</body>
+```
+
+> **Note**: This tag should appear once only in a given page cycle to prevent duplicated references.
+
+#### Injecting Scripts
+
+Links to JavaScript files can be programmatically injected in PHP either by [components](../../extend/cms-components.md) or [pages](../../cms/themes/pages.md).
+
+```php
+function onStart()
+{
+    $this->addJs('assets/js/app.js');
+}
+```
+
+You can also inject raw markup to the `{% scripts %}` tag by using the **scripts** anonymous placeholder [in the layout](../../cms/themes/layouts.md). Use the `{% put %}` tag in pages or layouts to add content to the placeholder.
+
+```twig
+{% put scripts %}
+    <script type="text/javascript" src="/themes/demo/assets/js/menu.js"></script>
+{% endput %}
+```
+
+### {% styles %}
+
+The `{% styles %}` tag renders CSS links to stylesheet files injected by the application. The tag is commonly defined in the HEAD section of a page or layout.
+
+```twig
+<head>
+    ...
+    {% styles %}
+</head>
+```
+
+> **Note**: This tag should appear once only in a given page cycle to prevent duplicated references.
+
+#### Injecting Styles
+
+Links to StyleSheet files can be programmatically injected in PHP either by [components](../../extend/cms-components.md) or [pages](../../cms/themes/pages.md).
+
+```php
+function onStart()
+{
+    $this->addCss('assets/css/hello.css');
+}
+```
+
+You can also inject raw markup to the `{% styles %}` tag by using the **styles** anonymous placeholder [in the layout](../../cms/themes/layouts.md). Use the `{% put %}` tag in pages or layouts to add content to the placeholder.
+
+```twig
+{% put styles %}
+    <link href="/themes/demo/assets/css/page.css" rel="stylesheet" />
+{% endput %}
+```
+
+### {% meta %}
+
+The `{% meta %}` tag renders meta content, such as open graph information. The tag is commonly defined in the HEAD section of a page or layout, placed before the styles and scripts.
+
+```twig
+<head>
+    {% meta %}
+    ...
+</head>
+```
+
+> **Note**: This tag should appear once only in a given page cycle to prevent duplicated references.
+
+#### Injecting Meta Data
+
+You can inject raw markup to the `{% meta %}` tag by using the **meta** anonymous placeholder [in the layout](../../cms/themes/layouts.md). Use the `{% put %}` tag in pages or layouts to add content to the placeholder.
+
+```twig
+{% put meta %}
+    <meta name="turbo-visit-control" content="error">
+{% endput %}
 ```

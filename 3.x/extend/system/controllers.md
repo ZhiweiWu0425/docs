@@ -32,7 +32,7 @@ The `create:controller` command generates a controller, configuration and view f
 php artisan create:controller Acme.Blog Posts
 ```
 
-Controller classes must extend the `\Backend\Classes\Controller` class. As any other plugin class, controllers should belong to the [plugin namespace](../system/plugins.md). The most basic representation of a Controller used inside a Plugin looks like this.
+Controller classes must extend the `Backend\Classes\Controller` class. As any other plugin class, controllers should belong to the [plugin namespace](../system/plugins.md). The most basic representation of a Controller used inside a Plugin looks like this.
 
 ```php
 namespace Acme\Blog\Controllers;
@@ -106,7 +106,7 @@ backend/[author name]/[plugin name]/[controller name]/[action name]
 The above Controller results in the following:
 
 ```text
-https://example.com/backend/acme/blog/users/index
+https://example.tld/backend/acme/blog/users/index
 ```
 
 ## Passing Data to Views
@@ -164,15 +164,15 @@ Overriding a response is useful particularly when extending other controllers. H
 });
 ```
 
-If you want to check the routed action or parameters, you can find these available in the controller `action` and `params` properties.
+If you want to check the routed action or parameters, you can find these available in the controller `getAction` and `getParams` methods.
 
 ```php
 Author\Plugin\Controllers\SomeController::extend(function($controller) {
-    if ($this->action === 'index') {
+    if ($controller->getAction() === 'index') {
         // Only do it for the index action
     }
 
-    if ($this->params[0] ?? null) {
+    if ($controller->getParams()[0] ?? null) {
         // Only if first parameter exists
     }
 });
@@ -190,7 +190,7 @@ To change the status code of a response, use the `setStatusCode` method.
 $this->setStatusCode(404);
 ```
 
-To override the entire response, call the `setResponse` method, this will force the response regardless of what happens on the page's lifecycle.
+To override the entire response, call the `setResponse` method, this will force the response regardless of what happens on the page's life cycle.
 
 ```php
 $this->setResponse('Page Not Found');

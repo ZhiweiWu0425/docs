@@ -126,7 +126,15 @@ $user->save();
 
 ### Sortable
 
-Sorted models will store a number value in `sort_order` which maintains the sort order of each individual model in a collection. To store a sort order for your models, apply the `October\Rain\Database\Traits\Sortable` trait and ensure that your schema has a column defined for it to use (example: `$table->integer('sort_order')->default(0);`).
+Sorted models will store a number value in `sort_order` which maintains the sort order of each individual model in a collection. To add the `sort_order` column to your table, you may use the `integer` method inside a migration.
+
+```php
+Schema::table('users', function ($table) {
+    $table->integer('sort_order')->default(0);
+});
+```
+
+To store a sort order for your models, apply the `October\Rain\Database\Traits\Sortable` trait and ensure that your schema has a column defined for it to use.
 
 ```php
 class User extends Model
@@ -135,25 +143,35 @@ class User extends Model
 }
 ```
 
-You may modify the key name used to identify the sort order by defining the `SORT_ORDER` constant:
+You may modify the key name used to identify the sort order by defining the `SORT_ORDER` constant.
 
 ```php
 const SORT_ORDER = 'my_sort_order_column';
 ```
 
-Use the `setSortableOrder` method to set the orders on a single record or multiple records.
+Use the `setSortableOrder` method to set the orders on multiple records. The array contains the model identifiers in the sort order that they should appear.
 
 ```php
-// Sets the order of the user to 1...
-$user->setSortableOrder($user->id, 1);
+$user->setSortableOrder([3, 2, 1]);
+```
 
-// Sets the order of records 1, 2, 3 to 3, 2, 1 respectively...
-$user->setSortableOrder([1, 2, 3], [3, 2, 1]);
+If sorting a subset of records, the second array is used to provide a reference pool of sort order values. For example, the following assigns the sort order column as 100, 200 or 300.
+
+```php
+$user->setSortableOrder([3, 2, 1], [100, 200, 300]);
 ```
 
 ### Simple Tree
 
-A simple tree model will use the `parent_id` column maintain a parent and child relationship between models. To use the simple tree, apply the `October\Rain\Database\Traits\SimpleTree` trait.
+A simple tree model will use the `parent_id` column maintain a parent and child relationship between models. To add the `parent_id` column to your table, you may use the `integer` method inside a migration.
+
+```php
+Schema::table('categories', function ($table) {
+    $table->integer('parent_id')->nullable()->unsigned();
+});
+```
+
+To use the simple tree, apply the `October\Rain\Database\Traits\SimpleTree` trait.
 
 ```php
 class Category extends Model
@@ -207,7 +225,18 @@ In order to render all levels of items and their children, you can use recursive
 
 ### Nested Tree
 
-The [nested set model](https://en.wikipedia.org/wiki/Nested_set_model) is an advanced technique for maintaining hierachies among models using `parent_id`, `nest_left`, `nest_right`, and `nest_depth` columns. To use a nested set model, apply the `October\Rain\Database\Traits\NestedTree` trait. All of the features of the `SimpleTree` trait are inherently available in this model.
+The [nested set model](https://en.wikipedia.org/wiki/Nested_set_model) is an advanced technique for maintaining hierachies among models using `parent_id`, `nest_left`, `nest_right`, and `nest_depth` columns. To add these columns to your table, you may use these methods inside a migration.
+
+```php
+Schema::table('categories', function ($table) {
+    $table->integer('parent_id')->nullable()->unsigned();
+    $table->integer('nest_left')->nullable();
+    $table->integer('nest_right')->nullable();
+    $table->integer('nest_depth')->nullable();
+});
+```
+
+To use a nested set model, apply the `October\Rain\Database\Traits\NestedTree` trait. All of the features of the `SimpleTree` trait are inherently available in this model.
 
 ```php
 class Category extends Model
@@ -292,10 +321,10 @@ class User extends Model
     use \October\Rain\Database\Traits\Validation;
 
     public $rules = [
-        'name' => 'required|between:4,16',
-        'email' => 'required|email',
-        'password' => 'required|alpha_num|between:4,8|confirmed',
-        'password_confirmation' => 'required|alpha_num|between:4,8'
+        'name' => ['required', 'between:4,16'],
+        'email' => ['required', 'email'],
+        'password' => ['required', 'alpha_num', 'between:4,8', 'confirmed'],
+        'password_confirmation' => ['required', 'alpha_num', 'between:4,8']
     ];
 }
 ```
@@ -303,15 +332,10 @@ class User extends Model
 You may also use [array syntax](../services/validation.md) for validation rules.
 
 ```php
-class User extends Model
-{
-    use \October\Rain\Database\Traits\Validation;
-
-    public $rules = [
-        'links.*.url' => 'required|url',
-        'links.*.anchor' => 'required'
-    ];
-}
+public $rules = [
+    'links.*.url' => ['required', 'url'],
+    'links.*.anchor' => ['required']
+];
 ```
 
 Models validate themselves automatically when the `save` method is called.
@@ -319,7 +343,7 @@ Models validate themselves automatically when the `save` method is called.
 ```php
 $user = new User;
 $user->name = 'Actual Person';
-$user->email = 'a.person@example.com';
+$user->email = 'a.person@example.tld';
 $user->password = 'passw0rd';
 
 // Returns false if model is invalid
@@ -329,6 +353,24 @@ $success = $user->save();
 ::: tip
 You can also validate a model at any time using the `validate` method.
 :::
+
+#### Enhanced Validation Rules
+
+The `unique` validation rule is automatically configured and does not require a table name to be specified.
+
+```php
+public $rules = [
+    'name' => ['unique'],
+];
+```
+
+The `required` validation rule supports **create** and **update** modifiers to only apply when a model is created or updated respectively. The following is only required when the model does not already exist.
+
+```php
+public $rules = [
+    'password' => ['required:create'],
+];
+```
 
 #### Retrieving Validation Errors
 
@@ -358,7 +400,7 @@ class User extends Model
 {
     public $customMessages = [
         'required' => 'The :attribute field is required.',
-        ...
+        // ...
     ];
 }
 ```
@@ -371,8 +413,8 @@ class User extends Model
     use \October\Rain\Database\Traits\Validation;
 
     public $rules = [
-        'links.*.url' => 'required|url',
-        'links.*.anchor' => 'required'
+        'links.*.url' => ['required', 'url'],
+        'links.*.anchor' => ['required'],
     ];
 
     public $customMessages = [
@@ -394,7 +436,7 @@ class User extends Model
 {
     public $attributeNames = [
         'email' => 'Email Address',
-        ...
+        // ...
     ];
 }
 ```
@@ -541,18 +583,22 @@ class User extends Model
 }
 ```
 
-### Multi Site
+### Multisite
 
-When applying multi-site to a model, only records belonging to the active site are available to manage. The active site is attached to the `site_id` column set on the record. To enable multi-site for a model, apply the `October\Rain\Database\Traits\Multisite` trait and define the fields to propagate across all records using the `$propagated` property:
+When applying multisite to a model, only records belonging to the active site are available to manage. The active site is attached to the `site_id` column set on the record. To enable multi-site for a model, apply the `October\Rain\Database\Traits\Multisite` trait and define the attributes to propagate across all records using the `$propagatable` property:
 
 ```php
 class User extends Model
 {
     use \October\Rain\Database\Traits\Multisite;
 
-    protected $propagated = ['api_code'];
+    protected $propagatable = ['api_code'];
 }
 ```
+
+::: tip
+The `$propagatable` is required by the multisite trait but can be left as an empty array to disable propagation of any attribute.
+:::
 
 To add a `site_id` column to your table, you may use the `integer` method from a migration. A `site_root_id` may also be used to link records together using a root record.
 
@@ -565,6 +611,22 @@ Schema::table('posts', function ($table) {
 
 Now, when a record is created it will be assigned to the active site and switching to a different site will propagate a new record automatically. When updating a record, propagated fields are copied to every record belonging to the root record.
 
+#### Enforcing Synchronization
+
+In some cases, all records must exist for every site, such as categories and tags. You may force every record to exist across all sites by setting the `$propagatableSync` property to true, which is false by default. Once enabled, after a model is saved, it will create the same model for other sites if they do not already exist.
+
+```php
+protected $propagatableSync = true;
+```
+
+#### Saving Models
+
+Models saved with the multisite trait do not propagate by default. Use the `savePropagate` method to ensure the propagation rules take effect.
+
+```php
+$model->savePropagate();
+```
+
 ### Revisionable
 
 October CMS models can record the history of changes in values by storing revisions. To store revisions for your model, apply the `October\Rain\Database\Traits\Revisionable` trait and declare a `$revisionable` property with an array containing the attributes to monitor for changes. You also need to define a `$morphMany` [model relation](./relations.md) called `revision_history` that refers to the `System\Models\Revision` class with the name `revisionable`, this is where the revision history data is stored.
@@ -574,25 +636,19 @@ class User extends Model
 {
     use \October\Rain\Database\Traits\Revisionable;
 
-    /**
-     * @var array Monitor these attributes for changes.
-     */
     protected $revisionable = ['name', 'email'];
 
-    /**
-     * @var array Relations
-     */
     public $morphMany = [
         'revision_history' => [\System\Models\Revision::class, 'name' => 'revisionable']
     ];
 }
 ```
 
-By default 500 records will be kept, however this can be modified by declaring a `$revisionableLimit` property on the model with a new limit value.
+By default a maximum number of 500 records will be kept, however, this can be modified by declaring a `$revisionableLimit` property on the model with a new limit value.
 
 ```php
 /**
- * @var int Maximum number of revision records to keep.
+ * @var int revisionableLimit as the maximum number records to keep.
  */
 public $revisionableLimit = 8;
 ```

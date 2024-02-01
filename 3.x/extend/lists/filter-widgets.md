@@ -29,7 +29,7 @@ The `create:filterwidget` command generates a backend filter widget, view and ba
 php artisan create:filterwidget Acme.Blog Discount
 ```
 
-The filter widget classes must extend the `Backend\Classes\FilterWidgetBase` class. A registered widget can be used in the backend [filter field definition](../../element/definitions.md) file. Example form widget class definition.
+The filter widget classes must extend the `Backend\Classes\FilterWidgetBase` class. A registered widget can be used in the backend [filter field definition](../../element/filter-scopes.md) file. Example form widget class definition.
 
 ```php
 namespace Backend\FilterWidgets;
@@ -46,7 +46,7 @@ class Discount extends FilterWidgetBase
 
 ## Filter Widget Properties
 
-Filter widgets may have properties that can be set using the [filter scope configuration](../../element/definitions.md). Simply define the configurable properties on the class and then call the `fillFromConfig` method to populate them inside the `init` method definition.
+Filter widgets may have properties that can be set using the [filter scope configuration](../../element/filter-scopes.md). Simply define the configurable properties on the class and then call the `fillFromConfig` method to populate them inside the `init` method definition.
 
 ```php
 class Discount extends FormWidgetBase
@@ -70,7 +70,7 @@ class Discount extends FormWidgetBase
 }
 ```
 
-The property values then become available to set from the [filter scope definition](../../element/definitions.md) when using the widget.
+The property values then become available to set from the [filter scope definition](../../element/filter-scopes.md) when using the widget.
 
 ```yaml
 discount:
@@ -99,9 +99,6 @@ The short code is used when referencing the widget in the filter scope definitio
 The main purpose of the filter widget is to apply a scope to the query of a model, which means capturing values from the user first. The `render` method is used to display the initial state of the filter and the `filterScope` property will contain active value along with other configured properties.
 
 ```php
-/**
- * render the filter state
- */
 public function render()
 {
     $this->vars['scope'] = $this->filterScope;
@@ -132,9 +129,6 @@ At a basic level the filter widget should show a label and its current state to 
 When a user clicks on the filter label, a form is displayed so that they may specify how to apply the filter. The `renderForm` method is used to display the filter form and should correspond to a `_discount_form.php` partial.
 
 ```php
-/**
- * renderForm for the filter
- */
 public function renderForm()
 {
     $this->vars['allowSearch'] = $this->allowSearch;
@@ -179,9 +173,6 @@ The `$value` variable will contain an array of the selected values. This array w
 The `getActiveValue` method is used to capture the filtered form values and storing them. It should return an array (or null) and use postback data for finding the values. If the `clearScope` postback value exists, it means the scope wants to be cleared. You may use the `hasPostValue` helper method to check if the value was found and is not an empty string.
 
 ```php
-/**
- * getActiveValue
- */
 public function getActiveValue()
 {
     if (post('clearScope')) {
@@ -201,9 +192,6 @@ public function getActiveValue()
 Once a filter value has been captured it can be applied to the query with the `applyScopeToQuery` method. The value can be taken from the `filterScope->value` property where the `value` name comes from the filter form values.
 
 ```php
-/**
- * applyScopeToQuery
- */
 public function applyScopeToQuery($query)
 {
     $hasDiscount = $this->filterScope->value;

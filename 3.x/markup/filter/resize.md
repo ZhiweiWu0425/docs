@@ -26,3 +26,63 @@ You can also pass a third options argument. This example will crop the image ins
 ```
 
 See the [image resizer article](../../extend/services/resizer.md) for more information on the available `options` parameters.
+
+## Custom Filenames
+
+The resizer will assign a random filename to resized images by default. You may use the original filename by passing the `true` to `filename` option to the resizer.
+
+```twig
+<img src="{{ 'banner.jpg'|resize(800, 600, { filename: true }) }}" />
+```
+
+The `filename` option also supports a custom filename as a string. The filename should not contain an extension since the original one is used.
+
+```twig
+<img src="{{ 'banner.jpg'|resize(800, 600, { filename: 'my-seo-friendly-name' }) }}" />
+```
+
+You may modify the extension with the `extension` option. This process will attempt to convert from one file type to another, for example, converting a JPG to a PNG file.
+
+```twig
+<img src="{{ 'banner.jpg'|resize(800, 600, {
+    filename: 'my-seo-friendly-name',
+    extension: 'png'
+}) }}" />
+```
+
+## Available Sources
+
+You may reference images from multiple sources, including the following paths:
+
+- `/app`
+- `/plugins`
+- `/themes`
+- `/modules`
+- `/storage/app/uploads`
+- `/storage/app/media`
+
+For example:
+
+```twig
+{{ '/plugins/acme/blog/assets/images/someimage.png'|resize(...) }}
+```
+
+## PHP Interface
+
+You may resize images in PHP using the `System\Classes\ResizeImages` and `resize` method. The return value is a URL location to the resized image.
+
+```php
+ResizeImages::resize('path/to/asset.jpg');
+```
+
+The method accepts a width (second argument), height (third argument) and [resizer options](../../extend/services/resizer.md) (fourth argument).
+
+```php
+ResizeImages::resize('path/to/asset.jpg', 800, 600, ['mode' => 'crop']);
+```
+
+#### See Also
+
+::: also
+* [Resizer Service](../../extend/services/resizer.md)
+:::

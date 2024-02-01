@@ -97,7 +97,7 @@ When the theme is installed for the first time, the system will attempt to insta
 
 ## Theme Customization
 
-Themes can support configuration values by defining a `form` key in the theme information file. This key should contain a configuration array or reference to a form field definition file, see [form field definitions](../../element/definitions.md) for more information.
+Themes can support configuration values by defining a `form` key in the theme information file. This key should contain a configuration array or reference to a form field definition file, see [form field definitions](../../element/form-fields.md) for more information.
 
 The following is an example of how to define a website name configuration field called **site_name**:
 
@@ -138,9 +138,9 @@ fields:
         default: My Amazing Site!
 ```
 
-### Using Theme Data In CSS
+### Using Theme Data in CSS
 
-Sometimes you want to include a visual preference inside your theme stylesheet. You may use CSS custom properties (variables) to make these values available. In the following example, we will use a [Color Picker field type](../../element/definitions.md) to specify a custom link color.
+Sometimes you want to include a visual preference inside your theme stylesheet. You may use CSS custom properties (variables) to make these values available. In the following example, we will use a [Color Picker field type](../../element/form/widget-colorpicker.md) to specify a custom link color.
 
 ```yaml
 form:
@@ -174,47 +174,29 @@ a {
 }
 ```
 
-## Localization
+### Using Theme Data with Combined Assets
 
-Themes can provide localization keys through files placed in the **lang** subdirectory of the theme's directory. These localization keys are registered automatically and can be used inside the theme contents or as backend form labels similar to [plugin localization](../../extend/system/localization.md).
+Assets combined using the `|theme` [filter and combiner](../markup/filter-theme.md) can have values passed to supporting filters, such as the LESS filter. Simply specify the `assetVar` option when defining the form field, the value should contain the desired variable name.
 
-### Localization File Structure
+```yaml
+form:
+    fields:
+        # [...]
 
-Below is an example of the theme's **lang** directory.
-
-::: dir
-├── themes
-|   └── website
-|       └── `lang`  _← Localization Directory_
-|           ├── en.json  _← Localization File_
-|           └── fr.json  _← Localization File_
-:::
-
-The localization file is a JSON file where strings use the "default" translation of the string as the key. For example, if your application has a French translation, you should create a `lang/fr.json` file.
-
-```json
-{
-    "I love programming.": "j'adore programmer"
-}
+        link_color:
+            label: Link color
+            type: colorpicker
+            assetVar: 'link-color'
 ```
 
-You are also able to define code-based keys by using the complete language key in the JSON file, for example, `theme.options.website_name` for the **acme** theme can be used.
+In the above example, the color value selected will be available inside the less file as `@link-color`. Assuming we have the following stylesheet reference:
 
-```json
-{
-    "theme.options.website_name": "October CMS"
-}
-```
-
-Language strings can be accessed in your theme files using the `trans` Twig filter.
-
-::: tip
-View [the markup guide](../../markup/filter/trans.md) to learn more about translation in Twig.
 ```twig
-<!-- j'adore programmer -->
-{{ 'I love programming.'|trans }}
-
-<!-- October CMS -->
-{{ 'theme.options.website_name'|trans }}
+<link href="{{ ['assets/less/theme.less']|theme }}" rel="stylesheet">
 ```
-:::
+
+Using some example content inside **themes/yourtheme/assets/less/theme.less**:
+
+```less
+a { color: @link-color }
+```

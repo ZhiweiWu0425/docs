@@ -44,8 +44,9 @@ Argument | Description
 **order** | sorting order for multiple records.
 **conditions** | filters the relation using a raw where query statement.
 **scope** | filters the relation using a supplied scope method.
-**push** | if set to false, this relation will not be saved via the `push` method. Default: `true`
-**delete** | if set to true, the related model will be deleted if the primary model is deleted or relationship is destroyed. Default: `false`
+**push** | if set to `false`, this relation will not be saved via the `push` method. Default: `true`
+**delete** | if set to `true`, the related model will be deleted if the primary model is deleted or relationship is destroyed. Default: `false`
+**softDelete** | if set to `true`, the related model will be soft deleted if the [primary model is soft deleted](./traits.md). Default: `false`
 **replicate** | if set to true, the related model will duplicated or associated via the `replicate` method. Default: `false`.
 **relationClass** | specify a custom class name for the related object.
 
@@ -93,7 +94,7 @@ public $belongsToMany = [
     ]
 ];
 
-public static myFilterMethod($query, $related, $parent)
+public static function myFilterMethod($query, $related, $parent)
 {
     // ...
 }
@@ -165,7 +166,7 @@ public $hasOne = [
 ];
 ```
 
-#### Defining the Inverse of the Relation
+#### Defining the Inverse Relation
 
 Now that we can access the `Phone` model from our `User`. Let's do the opposite and define a relationship on the `Phone` model that will let us access the `User` that owns the phone. We can define the inverse of a `hasOne` relationship using the `$belongsTo` property:
 
@@ -255,7 +256,7 @@ public $hasMany = [
 ];
 ```
 
-#### Defining the inverse of the relation
+#### Defining the Inverse Relation
 
 Now that we can access all of a post's comments, let's define a relationship to allow a comment to access its parent post. To define the inverse of a `hasMany` relationship, define the `$belongsTo` property on the child model:
 
@@ -300,8 +301,7 @@ Many-to-many relations are slightly more complicated than `hasOne` and `hasMany`
 Below is an example that shows the [database table structure](./structure.md) used to create the join table.
 
 ```php
-Schema::create('role_user', function($table)
-{
+Schema::create('role_user', function($table) {
     $table->integer('user_id')->unsigned();
     $table->integer('role_id')->unsigned();
     $table->primary(['user_id', 'role_id']);
@@ -349,14 +349,14 @@ In addition to customizing the name of the joining table, you may also customize
 public $belongsToMany = [
     'roles' => [
         \Acme\Blog\Models\Role::class,
-        'table'    => 'acme_blog_role_user',
-        'key'      => 'my_user_id',
+        'table' => 'acme_blog_role_user',
+        'key' => 'my_user_id',
         'otherKey' => 'my_role_id'
     ]
 ];
 ```
 
-#### Defining the Inverse of the Relationship
+#### Defining the Inverse Relation
 
 To define the inverse of a many-to-many relationship, you simply place another `$belongsToMany` property on your related model. To continue our user roles example, let's define the `users` relationship on the `Role` model:
 
@@ -733,7 +733,7 @@ class Post extends Model
 }
 ```
 
-#### Defining the inverse of the relationship
+#### Defining the Inverse Relation
 
 Next, on the `Tag` model, you should define a relation for each of its related models. So, for this example, we will define a `posts` relation and a `videos` relation:
 
@@ -857,6 +857,36 @@ If you need even more power, you may use the `whereHas` and `orWhereHas` methods
 // Retrieve all posts with at least one comment containing words like foo%
 $posts = Post::whereHas('comments', function ($query) {
     $query->where('content', 'like', 'foo%');
+})->get();
+```
+
+#### Inline Relationship Existence Queries
+
+To query a relationship's existence with a single condition to a relationship query, it is more convenient to use the `whereRelation`, `orWhereRelation`, `whereMorphRelation` or `orWhereMorphRelation` methods.
+
+```php
+$posts = Post::whereRelation('comments', 'is_approved', false)->get();
+```
+
+The `searchWhereRelation` or `orSearchWhereRelation` methods are available for searching relation columns. Similar to [search queries](./query.md), the method will add to the query using the search term (first argument), the relationship name (second argument) and search columns (third argument) using a case insensitive LIKE query.
+
+```php
+$posts = Post::searchWhereRelation('foo bar', 'author', ['name', 'bio'])->get();
+```
+
+#### Querying Relationship Absence
+
+You may pass the name of the relationship to the `doesntHave` and `orDoesntHave` methods to limit your results based on the absence of a relationship.
+
+```php
+$posts = Post::doesntHave('comments')->get();
+```
+
+The `whereDoesntHave` and `orWhereDoesntHave` methods can add extra query constraints to your `doesntHave` queries.
+
+```php
+$posts = Post::whereDoesntHave('comments', function ($query) {
+    $query->where('content', 'like', 'code%');
 })->get();
 ```
 
@@ -1279,7 +1309,7 @@ You can commit (bind or unbind) all deferred bindings when you save the master m
 ```php
 $post = new Post;
 $post->title = "First blog post";
-$post->save(null, $sessionKey);
+$post->save(['sessionKey' => $sessionKey]);
 ```
 
 The same approach works with the model's `create` method:
@@ -1315,17 +1345,14 @@ Sometimes you might need to disable deferred binding entirely for a given model,
 ```php
 public function __construct()
 {
-    $result = parent::__construct(...func_get_args());
+    parent::__construct(...func_get_args());
 
     $this->bindEvent('model.saveInternal', function () {
         $this->sessionKey = null;
     });
-
-    return $result;
 }
 ```
 
 ::: tip
 This will disable deferred binding entirely for any model's you apply this override to.
 :::
-

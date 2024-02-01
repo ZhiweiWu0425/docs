@@ -3,7 +3,7 @@ subtitle: Learn how to include new menu items in the backend panel.
 ---
 # Navigation
 
-Plugins can extend the backend navigation menus by overriding the `registerNavigation` method of the [plugin registration file](../extending.md). This section shows you how to add menu items to the backend navigation area. An example of registering a top-level navigation menu item with two sub-menu items:
+Plugins can extend the backend navigation menus by overriding the `registerNavigation` method of the [plugin registration file](../extending.md). This section shows you how to add menu items to the backend navigation area. The following is an example of registering a top-level navigation menu item with two sub-menu items.
 
 ```php
 public function registerNavigation()
@@ -50,6 +50,8 @@ Property | Description
 **counterLabel** | a string value to describe the numeric reference in counter, optional.
 **attributes** | an associative array of attributes and values to apply to the menu item, optional.
 **permissions** | an array of permissions the backend user must have in order to view the menu item (Note: direct access of URLs still requires separate permission checks), optional.
+**sideMenu** | an array of sub-menu items sharing the same configuration as parent menu items, optional.
+**itemType** | specifies a display type for the item, sub-menu items only. Supported: `primary`, `link`, `ruler`, `section`. Default: `link`.
 
 The following are system generated value and are not provided when registering the navigation items.
 
@@ -68,4 +70,92 @@ Navigation items support specifying a counter to indicate that there are items t
     'counter' => [\Author\Plugin\Classes\MyMenuCounterService::class, 'getCounterMethod'],
     'counterLabel' => 'Label describing a dynamic menu counter',
 ],
+```
+
+## Item Display Types
+
+Sub-menu items support different display types using the `itemType` property, including user-interface elements. Set the type to `section` to display a navigation section. Prefixing the key name with an underscore (`_`) is a good way to communicate that it is a UI element.
+
+```php
+'_section1' => [
+    'itemType' => 'section',
+    'label' => 'Advanced',
+],
+```
+
+It might be useful to combine a section with a navigation divider placed above it. Set the type to `ruler` to display a divider.
+
+```php
+'_ruler1' => [
+    'itemType' => 'ruler',
+],
+```
+
+To display a call to action, set the type to `primary` to display the link as a primary button.
+
+```php
+'people_create' => [
+    'label' => 'New Person',
+    'icon' => 'icon-plus',
+    'url' => Backend::url('acme/blog/people/create'),
+    'itemType' => 'primary',
+],
+```
+
+If displaying a button for the create action of a controller, change the side-menu context using the `BackendMenu` facade before inheriting the parent logic.
+
+```php
+public function create()
+{
+    BackendMenu::setContextSideMenu('people_create');
+
+    return $this->asExtension('FormController')->create();
+}
+```
+
+## Extending the Backend Menu
+
+The `backend.menu.extendItems` [event listener](../extending.md) can be used to modify the existing navigation items, after the system and plugins have registered their navigation items. The event returns a navigation `$manager` instance that supports the following methods.
+
+Method | Description
+------------- | -------------
+**addMainMenuItems($owner, $definitions)** | Add or update a main menu definition
+**getMainMenuItem($owner, $code)** | Retrieve an existing main menu definition
+**removeMainMenuItem($owner, $code)** | Delete an existing main menu definition
+**addSideMenuItems($owner, $code, $definitions)** | Add or update a side menu definition
+**getSideMenuItem($owner, $code, $sideCode)** | Retrieve an existing side menu definition
+**removeSideMenuItem($owner, $code, $sideCode)** | Delete an existing side menu definition
+
+When retrieving a menu item, the object supports method chaining to update its properties. The following example will replace the label for the Editor with **Code Editor**.
+
+```php
+Event::listen('backend.menu.extendItems', function($manager) {
+    $manager->getMainMenuItem('October.Editor', 'editor')->label('Code Editor');
+});
+```
+
+The next example will change the label to **News** and add a **9** counter to the Acme Blog plugin.
+
+```php
+Event::listen('backend.menu.extendItems', function($manager) {
+    $manager->getMainMenuItem('Acme.Blog', 'blog')
+        ->getSideMenuItem('posts')
+        ->label('News')
+        ->counter(9);
+});
+```
+
+Similarly, we can remove the menu items using the same event. The following example will remove all items, remove a single item, and remove multiple items, respectively.
+
+```php
+Event::listen('backend.menu.extendItems', function($manager) {
+    $manager->removeMainMenuItem('Acme.Blog', 'blog');
+
+    $manager->removeSideMenuItem('Acme.Blog', 'blog', 'posts');
+
+    $manager->removeSideMenuItems('Acme.Blog', 'blog', [
+        'posts',
+        'categories'
+    ]);
+});
 ```

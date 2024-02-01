@@ -3,11 +3,15 @@ subtitle: Programatically test and harden your business logic.
 ---
 # Unit Testing
 
-Individual plugin test cases can be run by running `phpunit` in the plugin's base directory (ex. `plugins/acme/demo`). If `phpunit` is not available globally, you may call it from the root vendor directory.
+Individual plugin test cases can be performed using the `plugin:test` artisan command, followed by the plugin code. For example, the following command will run the tests found in **plugins/acme/demo** directory.
 
 ```bash
-../../../vendor/bin/phpunit
+php artisan plugin:test acme.demo
 ```
+
+::: tip
+If you have `phpunit` installed globally, you can also call this from the plugin directory.
+:::
 
 ## Creating Plugin Tests
 
@@ -26,8 +30,9 @@ The first step to testing plugins is to create a file called **phpunit.xml** in 
     stopOnFailure="false"
 >
     <testsuites>
-        <testsuite name="Plugin Unit Test Suite">
+        <testsuite name="Plugin Test Suite">
             <directory>./tests</directory>
+            <exclude>./tests/browser</exclude>
         </testsuite>
     </testsuites>
     <php>
@@ -47,15 +52,17 @@ The first step to testing plugins is to create a file called **phpunit.xml** in 
 
 ## Creating a Test Class
 
+The `create:test` command generates a test class. The first argument specifies the author and plugin name. The second argument specifies the test class name, which must end in **Test**.
+
+```bash
+php artisan create:test Acme.Blog UserTest
+```
+
 All tests should be placed in the **tests** directory that is used store the test classes. Class names should use a `Test` suffic and a namespace for the class is optional. The test class should extend the `PluginTestCase` base class and this is a special class that will set up the October CMS database stored in memory, as part of the `setUp` method.
 
 ```php
 use Acme\Blog\Models\Post;
-use PluginTestCase;
 
-/**
- * PostTest tests the posts
- */
 class PostTest extends PluginTestCase
 {
     public function testCreateFirstPost()
@@ -68,7 +75,7 @@ class PostTest extends PluginTestCase
 
 ## Registering and Booting Plugins
 
-In the test environment, the plugin itself and any dependencies of the plugin are registered and booted automatically. This gives finer control over the testing environment and prevents other plugins in the system from interfering with things like event registration. You can disable automatic loading of the current plugin by setting the `autoRegister` property to false.
+In the test environment, the plugin itself and any dependencies of the plugin are registered and booted automatically. This gives finer control over the testing environment and prevents other plugins in the system from interfering with things like event registration. You can disable automatic loading of the current plugin by setting the `autoRegister` property to `false`.
 
 ```php
 /**
